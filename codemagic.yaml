@@ -6,12 +6,16 @@ workflows:
     environment:
       vars:
         BUNDLE_ID: "com.mystoryfootball.app"
-      node: 18.17.0
+      node: 16.20.0
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Install npm dependencies
-        script: npm ci
+      - name: Clean and install npm dependencies
+        script: |
+          npm cache clean --force
+          rm -rf node_modules
+          rm -rf package-lock.json
+          npm install --legacy-peer-deps
       - name: Build React app
         script: npm run build
       - name: Add iOS platform
@@ -26,5 +30,3 @@ workflows:
             -destination generic/platform=iOS \
             archive \
             CODE_SIGNING_ALLOWED=NO
-    artifacts:
-      - ios/App/build/**/*.xcarchive
