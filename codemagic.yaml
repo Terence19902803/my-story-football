@@ -6,7 +6,7 @@ workflows:
     environment:
       vars:
         BUNDLE_ID: "com.terencedesrues.mystoryfootball"
-      node: 16.20.0
+      node: 20.12.0
       xcode: latest
       cocoapods: default
     scripts:
