@@ -5,7 +5,9 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       vars:
-        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
+        BUNDLE_ID: "com.mystoryfootball.app"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
       node: 20.12.0
       xcode: latest
       cocoapods: default
@@ -17,29 +19,40 @@ workflows:
           cat package.json | grep -A5 '"scripts"'
           npm --version
           node --version
-      - name: Clean and install npm dependencies
+      - name: Install only Capacitor dependencies
         script: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json
-          npm install --legacy-peer-deps
-      - name: Build React app with correct config
+          npm install @capacitor/core @capacitor/cli @capacitor/ios --legacy-peer-deps
+      - name: Verify pre-built files
         script: |
-          echo "Building with Vite using vite.config.ts..."
-          npx vite build
-          echo "Building server..."
-          npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
-          echo "Build completed, checking output..."
+          echo "Using pre-built files from dist/..."
           ls -la dist/
           ls -la dist/public/
+          echo "All files ready for Capacitor!"
       - name: Add iOS platform
-        script: npx cap add ios --confirm
+        script: |
+          npx cap add ios --confirm
       - name: Sync Capacitor
-        script: npx cap sync ios
+        script: |
+          npx cap sync ios
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App && pod install
       - name: Build iOS app (unsigned)
         script: |
           cd ios/App && xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
             -destination generic/platform=iOS \
+            -archivePath build/App.xcarchive \
             archive \
             CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - ios/App/build/**/*.xcarchive
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: true
