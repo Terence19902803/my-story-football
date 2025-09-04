@@ -24,8 +24,9 @@ workflows:
           npm install --legacy-peer-deps
       - name: Build React app manually
         script: |
-          echo "Building with Vite..."
-          npx vite build
+          echo "Building with Vite from client directory..."
+          cd client && npx vite build --outDir ../dist/public
+          cd ..
           echo "Building server..."
           npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
           echo "Build completed, checking output..."
