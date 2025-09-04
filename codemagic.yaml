@@ -1,3 +1,27 @@
+workflows:
+  ios-test:
+    name: iOS Test Build - My Story Football
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      vars:
+        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
+      node: 20.12.0
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Debug environment
+        script: |
+          pwd
+          ls -la
+          cat package.json | grep -A5 '"scripts"'
+          npm --version
+          node --version
+      - name: Clean and install npm dependencies
+        script: |
+          npm cache clean --force
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps
       - name: Build React app with correct config
         script: |
           echo "Building with Vite using vite.config.ts..."
@@ -7,3 +31,15 @@
           echo "Build completed, checking output..."
           ls -la dist/
           ls -la dist/public/
+      - name: Add iOS platform
+        script: npx cap add ios --confirm
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Build iOS app (unsigned)
+        script: |
+          cd ios/App && xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -destination generic/platform=iOS \
+            archive \
+            CODE_SIGNING_ALLOWED=NO
