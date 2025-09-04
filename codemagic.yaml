@@ -5,19 +5,32 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       vars:
-        BUNDLE_ID: "com.mystoryfootball.app"
+        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
       node: 16.20.0
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Debug environment
+        script: |
+          pwd
+          ls -la
+          cat package.json | grep -A5 '"scripts"'
+          npm --version
+          node --version
       - name: Clean and install npm dependencies
         script: |
           npm cache clean --force
-          rm -rf node_modules
-          rm -rf package-lock.json
+          rm -rf node_modules package-lock.json
           npm install --legacy-peer-deps
-      - name: Build React app
-        script: npm run build
+      - name: Build React app manually
+        script: |
+          echo "Building with Vite..."
+          npx vite build
+          echo "Building server..."
+          npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+          echo "Build completed, checking output..."
+          ls -la dist/
+          ls -la dist/public/
       - name: Add iOS platform
         script: npx cap add ios --confirm
       - name: Sync Capacitor
