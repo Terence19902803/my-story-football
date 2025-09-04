@@ -1,0 +1,61 @@
+workflows:
+  ios-test:
+    name: iOS Test Build - My Story Football
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      vars:
+        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 20.12.0
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Debug environment
+        script: |
+          pwd
+          ls -la
+          cat package.json | grep -A5 '"scripts"'
+          npm --version
+          node --version
+      - name: Install only Capacitor dependencies
+        script: |
+          npm install @capacitor/core @capacitor/cli @capacitor/ios --legacy-peer-deps
+      - name: Verify pre-built files
+        script: |
+          echo "Using pre-built files from dist/..."
+          ls -la dist/
+          ls -la dist/public/
+          echo "All files ready for Capacitor!"
+      - name: Add iOS platform
+        script: |
+          npx cap add ios --confirm
+      - name: Sync Capacitor
+        script: |
+          npx cap sync ios
+      - name: Set Bundle ID
+        script: |
+          cd ios/App && /usr/libexec/PlistBuddy -c "Set :PRODUCT_BUNDLE_IDENTIFIER $BUNDLE_ID" App.xcodeproj/project.pbxproj || echo "Bundle ID set via other method"
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App && pod install
+      - name: Build iOS app (unsigned)
+        script: |
+          cd ios/App && xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -destination generic/platform=iOS \
+            -archivePath build/App.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - ios/App/build/**/*.xcarchive
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: true
