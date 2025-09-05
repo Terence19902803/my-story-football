@@ -1,6 +1,6 @@
 workflows:
   ios-app-store:
-    name: iOS App Store - My Story Football
+    name: iOS App Store My Story Football
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
@@ -16,45 +16,29 @@ workflows:
       - name: Install Capacitor CLI
         script: |
           npm install -g @capacitor/cli
-          echo "Capacitor CLI installed"
-      - name: Verify pre-built files
+      - name: Verify files
         script: |
-          echo "Using pre-built React files"
           ls -la dist/
-          echo "Files ready for iOS build"
-      - name: Sync Capacitor
+      - name: Sync iOS
         script: |
           npx cap sync ios
-      - name: Install CocoaPods
+      - name: Install Pods
         script: |
-          cd ios/App
-          pod install
-      - name: Build iOS Archive
+          cd ios/App && pod install
+      - name: Build Archive
         script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace \
-                     -scheme App \
-                     -destination generic/platform=iOS \
-                     -archivePath build/App.xcarchive \
-                     archive
-      - name: Export for App Store
+          cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -destination generic/platform=iOS -archivePath build/App.xcarchive archive
+      - name: Export IPA
         script: |
-          cd ios/App
-          xcodebuild -exportArchive \
-                     -archivePath build/App.xcarchive \
-                     -exportPath build/ipa \
-                     -exportOptionsPlist exportOptions.plist
+          cd ios/App && xcodebuild -exportArchive -archivePath build/App.xcarchive -exportPath build/ipa -exportOptionsPlist exportOptions.plist
     artifacts:
       - ios/App/build/**/*.ipa
       - ios/App/build/**/*.xcarchive
-      - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
-        auth: integration
         submit_to_app_store: true
         cancel_previous_submissions: true
         release_type: MANUAL
-        submit_to_testflight: true
       email:
         recipients:
           - terence.desrues@example.com
