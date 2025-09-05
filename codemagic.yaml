@@ -1,7 +1,7 @@
 workflows:
-  ios-test:
-    name: iOS Test Build - My Story Football
-    max_build_duration: 60
+  ios-app-store:
+    name: iOS App Store Submission - My Story Football
+    max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
       vars:
@@ -11,14 +11,11 @@ workflows:
       node: 20.12.0
       xcode: latest
       cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.terencedesrues.mystoryfootball
     scripts:
-      - name: Debug environment
-        script: |
-          pwd
-          ls -la
-          npm --version
-          node --version
-      - name: Install only Capacitor dependencies
+      - name: Install Capacitor dependencies
         script: |
           npm install @capacitor/core @capacitor/cli @capacitor/ios --legacy-peer-deps
       - name: Verify pre-built files
@@ -27,31 +24,42 @@ workflows:
           ls -la dist/
           ls -la dist/public/
           echo "All files ready for Capacitor!"
-      - name: Add iOS platform
-        script: |
-          npx cap add ios --confirm
+          echo "iOS platform already exists, skipping add step"
+          ls -la ios/
       - name: Sync Capacitor
         script: |
           npx cap sync ios
       - name: Install CocoaPods dependencies
         script: |
           cd ios/App && pod install
-      - name: Build iOS app unsigned
+      - name: Build iOS app for App Store
         script: |
           cd ios/App && xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
             -destination generic/platform=iOS \
-            -archivePath build/App.xcarchive \
-            archive \
-            CODE_SIGNING_ALLOWED=NO
+            -archivePath build/MyStoryFootball.xcarchive \
+            archive
+      - name: Export IPA for App Store
+        script: |
+          cd ios/App && xcodebuild \
+            -exportArchive \
+            -archivePath build/MyStoryFootball.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist exportOptions.plist
     artifacts:
+      - ios/App/build/**/*.ipa
       - ios/App/build/**/*.xcarchive
       - /tmp/xcodebuild_logs/*.log
     publishing:
+      app_store_connect:
+        submit_to_app_store: true
+        cancel_previous_submissions: true
+        release_type: MANUAL
+        submit_to_testflight: true
       email:
         recipients:
-          - user@example.com
+          - terence.desrues@example.com
         notify:
           success: true
           failure: true
