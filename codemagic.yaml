@@ -3,7 +3,7 @@ workflows:
     name: iOS Build
     environment:
       xcode: latest
-      node: 18
+      node: 20
       cocoapods: default
     scripts:
       - name: Install npm dependencies
