@@ -1,0 +1,67 @@
+workflows:
+  ios-app-store:
+    name: iOS App Store Submission - My Story Football
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      vars:
+        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 20.12.0
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.terencedesrues.mystoryfootball
+    scripts:
+      - name: Skip npm install - using pre-built files
+        script: |
+          echo "Skipping npm install - using pre-built React app"
+          ls -la dist/
+          echo "Pre-built files verified ✅"
+      - name: Install only Capacitor CLI
+        script: |
+          npm install -g @capacitor/cli
+      - name: Verify iOS project exists
+        script: |
+          echo "iOS project already exists"
+          ls -la ios/
+          ls -la ios/App/
+      - name: Sync Capacitor
+        script: |
+          npx cap sync ios
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App && pod install
+      - name: Build iOS app for App Store
+        script: |
+          cd ios/App && xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -destination generic/platform=iOS \
+            -archivePath build/MyStoryFootball.xcarchive \
+            archive
+      - name: Export IPA for App Store
+        script: |
+          cd ios/App && xcodebuild \
+            -exportArchive \
+            -archivePath build/MyStoryFootball.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist exportOptions.plist
+    artifacts:
+      - ios/App/build/**/*.ipa
+      - ios/App/build/**/*.xcarchive
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        submit_to_app_store: true
+        cancel_previous_submissions: true
+        release_type: MANUAL
+        submit_to_testflight: true
+      email:
+        recipients:
+          - terence.desrues@example.com
+        notify:
+          success: true
+          failure: true

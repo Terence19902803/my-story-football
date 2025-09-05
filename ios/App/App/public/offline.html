@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Hors Ligne - Profil Pro</title>
+    <style>
+        :root {
+            --fm-gold: #D4AF37;
+            --fm-darker: #0F0C1C;
+            --fm-dark: #1A1625;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--fm-darker), var(--fm-dark));
+            color: white;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            max-width: 400px;
+        }
+        
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--fm-gold);
+            font-weight: 700;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .retry-btn {
+            background: var(--fm-gold);
+            color: var(--fm-darker);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .features {
+            margin-top: 3rem;
+            text-align: left;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .feature-item::before {
+            content: "⚽";
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="icon">📱</div>
+        <h1>Mode Hors Ligne</h1>
+        <p>Vous êtes actuellement déconnecté. Certaines fonctionnalités sont limitées.</p>
+        
+        <button class="retry-btn" onclick="window.location.reload()">
+            Réessayer
+        </button>
+        
+        <div class="features">
+            <div class="feature-item">Vos données sont sauvegardées localement</div>
+            <div class="feature-item">Synchronisation automatique au retour</div>
+            <div class="feature-item">Navigation possible en mode limité</div>
+        </div>
+    </div>
+    
+    <script>
+        // Écouter le retour de la connexion
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+        
+        // Vérifier périodiquement la connexion
+        setInterval(() => {
+            if (navigator.onLine) {
+                window.location.reload();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
