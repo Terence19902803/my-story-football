@@ -13,7 +13,7 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.terencedesrues.mystoryfootball
     scripts:
-      - name: Install Capacitor CLI only
+      - name: Install Capacitor CLI
         script: |
           npm install -g @capacitor/cli
           echo "Capacitor CLI installed"
@@ -32,4 +32,32 @@ workflows:
       - name: Build iOS Archive
         script: |
           cd ios/App
-          xcodebuild -workspace
+          xcodebuild -workspace App.xcworkspace \
+                     -scheme App \
+                     -destination generic/platform=iOS \
+                     -archivePath build/App.xcarchive \
+                     archive
+      - name: Export for App Store
+        script: |
+          cd ios/App
+          xcodebuild -exportArchive \
+                     -archivePath build/App.xcarchive \
+                     -exportPath build/ipa \
+                     -exportOptionsPlist exportOptions.plist
+    artifacts:
+      - ios/App/build/**/*.ipa
+      - ios/App/build/**/*.xcarchive
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_app_store: true
+        cancel_previous_submissions: true
+        release_type: MANUAL
+        submit_to_testflight: true
+      email:
+        recipients:
+          - terence.desrues@example.com
+        notify:
+          success: true
+          failure: true
