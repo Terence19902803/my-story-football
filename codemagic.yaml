@@ -14,6 +14,8 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.terencedesrues.mystoryfootball
+    integrations:
+      capacitor: false   # ✅ Désactive l'étape auto "Add iOS platform"
     scripts:
       - name: Install Capacitor dependencies
         script: |
