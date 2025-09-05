@@ -16,7 +16,8 @@ workflows:
         script: |
           pwd
           ls -la
-          ls -la dist/ || echo "No dist folder yet"
+          npm --version
+          node --version
       - name: Install only Capacitor dependencies
         script: |
           npm install @capacitor/core @capacitor/cli @capacitor/ios --legacy-peer-deps
@@ -25,6 +26,7 @@ workflows:
           echo "Using pre-built files from dist/..."
           ls -la dist/
           ls -la dist/public/
+          echo "All files ready for Capacitor!"
       - name: Add iOS platform
         script: |
           npx cap add ios --confirm
@@ -34,7 +36,7 @@ workflows:
       - name: Install CocoaPods dependencies
         script: |
           cd ios/App && pod install
-      - name: Build iOS app (unsigned)
+      - name: Build iOS app unsigned
         script: |
           cd ios/App && xcodebuild \
             -workspace App.xcworkspace \
@@ -45,3 +47,11 @@ workflows:
             CODE_SIGNING_ALLOWED=NO
     artifacts:
       - ios/App/build/**/*.xcarchive
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: true
