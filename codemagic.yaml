@@ -16,9 +16,7 @@ workflows:
         script: |
           pwd
           ls -la
-          cat package.json | grep -A5 '"scripts"'
-          npm --version
-          node --version
+          ls -la dist/ || echo "No dist folder yet"
       - name: Install only Capacitor dependencies
         script: |
           npm install @capacitor/core @capacitor/cli @capacitor/ios --legacy-peer-deps
@@ -27,16 +25,12 @@ workflows:
           echo "Using pre-built files from dist/..."
           ls -la dist/
           ls -la dist/public/
-          echo "All files ready for Capacitor!"
       - name: Add iOS platform
         script: |
           npx cap add ios --confirm
       - name: Sync Capacitor
         script: |
           npx cap sync ios
-      - name: Set Bundle ID
-        script: |
-          cd ios/App && /usr/libexec/PlistBuddy -c "Set :PRODUCT_BUNDLE_IDENTIFIER $BUNDLE_ID" App.xcodeproj/project.pbxproj || echo "Bundle ID set via other method"
       - name: Install CocoaPods dependencies
         script: |
           cd ios/App && pod install
@@ -51,11 +45,3 @@ workflows:
             CODE_SIGNING_ALLOWED=NO
     artifacts:
       - ios/App/build/**/*.xcarchive
-      - /tmp/xcodebuild_logs/*.log
-    publishing:
-      email:
-        recipients:
-          - user@example.com
-        notify:
-          success: true
-          failure: true
