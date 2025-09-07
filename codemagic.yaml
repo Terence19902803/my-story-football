@@ -29,9 +29,9 @@ workflows:
             -configuration Release \
             archive \
             -archivePath $CM_BUILD_DIR/Runner.xcarchive \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            DEVELOPMENT_TEAM=$APP_STORE_CONNECT_TEAM_ID \
+            CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates
 
       - name: Create exportOptions.plist
         script: |
@@ -42,12 +42,14 @@ workflows:
           <dict>
               <key>method</key>
               <string>app-store</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>teamID</key>
+              <string>$APP_STORE_CONNECT_TEAM_ID</string>
               <key>uploadBitcode</key>
               <false/>
               <key>compileBitcode</key>
               <false/>
-              <key>signingStyle</key>
-              <string>automatic</string>
           </dict>
           </plist>
           EOF
@@ -58,18 +60,19 @@ workflows:
             -exportArchive \
             -archivePath $CM_BUILD_DIR/Runner.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR
+            -exportPath $CM_BUILD_DIR \
+            -allowProvisioningUpdates
 
     artifacts:
       - $CM_BUILD_DIR/*.ipa
 
     publishing:
-      email:
-        recipients:
-          - "ton-email@example.com"
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
         submit_to_app_store: false
+      email:
+        recipients:
+          - "ton-email@example.com"
