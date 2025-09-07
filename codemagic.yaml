@@ -24,6 +24,8 @@ workflows:
             -scheme "App" \
             -sdk iphoneos \
             -configuration Release \
+            archive \
+            -archivePath $CM_BUILD_DIR/Runner.xcarchive \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
@@ -32,11 +34,10 @@ workflows:
     publishing:
       email:
         recipients:
-          - "ton-email@exemple.com"
-  publishing:
-  app_store_connect:
-    api_key: $APP_STORE_CONNECT_PRIVATE_KEY      # contenu du fichier .p8
-    key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER    # Key ID
-    issuer_id: $APP_STORE_CONNECT_ISSUER_ID      # Issuer ID
-    submit_to_testflight: true                   # envoi automatique sur TestFlight
-    submit_to_app_store: false                   # reste en TestFlight, tu soumets après manuellement
+          - "ton-email@example.com"
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+        submit_to_app_store: false
