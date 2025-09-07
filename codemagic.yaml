@@ -6,6 +6,7 @@ workflows:
       xcode: latest
       node: 20
       cocoapods: default
+
     scripts:
       - name: Install npm dependencies
         script: |
@@ -20,6 +21,13 @@ workflows:
           cd ios
           pod install
           cd ..
+
+      - name: Ensure shared scheme exists
+        script: |
+          mkdir -p ios/App/App.xcodeproj/xcshareddata/xcschemes
+          if ls ios/App/App.xcodeproj/xcuserdata/*/xcschemes/*.xcscheme 1> /dev/null 2>&1; then
+            cp ios/App/App.xcodeproj/xcuserdata/*/xcschemes/*.xcscheme ios/App/App.xcodeproj/xcshareddata/xcschemes/ || true
+          fi
 
       - name: Build iOS app (archive)
         script: |
