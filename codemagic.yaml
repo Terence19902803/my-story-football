@@ -20,14 +20,36 @@ workflows:
         script: |
           cd ios
           pod install
-          cd ..
 
-      - name: Ensure shared scheme exists
+      - name: Create shared scheme
         script: |
-          mkdir -p ios/App/App.xcodeproj/xcshareddata/xcschemes
-          if ls ios/App/App.xcodeproj/xcuserdata/*/xcschemes/*.xcscheme 1> /dev/null 2>&1; then
-            cp ios/App/App.xcodeproj/xcuserdata/*/xcschemes/*.xcscheme ios/App/App.xcodeproj/xcshareddata/xcschemes/ || true
-          fi
+          cd ios/App
+          mkdir -p App.xcodeproj/xcshareddata/xcschemes
+          echo '<?xml version="1.0" encoding="UTF-8"?>
+          <Scheme
+             LastUpgradeVersion = "9999"
+             version = "1.3">
+             <BuildAction
+                parallelizeBuildables = "YES"
+                buildImplicitDependencies = "YES">
+                <BuildActionEntries>
+                   <BuildActionEntry
+                      buildForTesting = "YES"
+                      buildForRunning = "YES"
+                      buildForProfiling = "YES"
+                      buildForArchiving = "YES"
+                      buildForAnalyzing = "YES">
+                      <BuildableReference
+                         BuildableIdentifier = "primary"
+                         BlueprintIdentifier = "App"
+                         BuildableName = "App.app"
+                         BlueprintName = "App"
+                         ReferencedContainer = "container:App.xcodeproj">
+                      </BuildableReference>
+                   </BuildActionEntry>
+                </BuildActionEntries>
+             </BuildAction>
+          </Scheme>' > App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
 
       - name: Build iOS app (archive)
         script: |
@@ -39,36 +61,7 @@ workflows:
             archive \
             -archivePath $CM_BUILD_DIR/Runner.xcarchive \
             DEVELOPMENT_TEAM=$APP_STORE_CONNECT_TEAM_ID \
-            -allowProvisioningUpdates
-
-      - name: Create exportOptions.plist
-        script: |
-          cat > ios/exportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store</string>
-              <key>signingStyle</key>
-              <string>automatic</string>
-              <key>teamID</key>
-              <string>$APP_STORE_CONNECT_TEAM_ID</string>
-              <key>uploadBitcode</key>
-              <false/>
-              <key>compileBitcode</key>
-              <false/>
-          </dict>
-          </plist>
-          EOF
-
-      - name: Export IPA
-        script: |
-          xcodebuild \
-            -exportArchive \
-            -archivePath $CM_BUILD_DIR/Runner.xcarchive \
-            -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             -allowProvisioningUpdates
 
     artifacts:
