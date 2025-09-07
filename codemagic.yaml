@@ -20,7 +20,7 @@ workflows:
           cd ios
           pod install
 
-      - name: Build iOS app (archive)
+      - name: Build iOS app
         script: |
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
@@ -29,38 +29,6 @@ workflows:
             -configuration Release \
             archive \
             -archivePath $CM_BUILD_DIR/Runner.xcarchive \
-            DEVELOPMENT_TEAM=$APP_STORE_CONNECT_TEAM_ID \
-            CODE_SIGN_STYLE=Automatic \
-            -allowProvisioningUpdates
-
-      - name: Create exportOptions.plist
-        script: |
-          cat > ios/exportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store</string>
-              <key>signingStyle</key>
-              <string>automatic</string>
-              <key>teamID</key>
-              <string>$APP_STORE_CONNECT_TEAM_ID</string>
-              <key>uploadBitcode</key>
-              <false/>
-              <key>compileBitcode</key>
-              <false/>
-          </dict>
-          </plist>
-          EOF
-
-      - name: Export IPA
-        script: |
-          xcodebuild \
-            -exportArchive \
-            -archivePath $CM_BUILD_DIR/Runner.xcarchive \
-            -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR \
             -allowProvisioningUpdates
 
     artifacts:
