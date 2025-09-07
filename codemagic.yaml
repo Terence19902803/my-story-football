@@ -22,14 +22,16 @@ workflows:
 
       - name: Build iOS app (archive)
         script: |
-          cd ios
           xcodebuild \
-            -workspace "App/App.xcworkspace" \
+            -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
             -sdk iphoneos \
             -configuration Release \
             archive \
-            -archivePath $CM_BUILD_DIR/Runner.xcarchive
+            -archivePath $CM_BUILD_DIR/Runner.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Export IPA
         script: |
