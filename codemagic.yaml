@@ -30,6 +30,7 @@ workflows:
             -configuration Release \
             archive \
             -archivePath $CM_BUILD_DIR/Runner.xcarchive \
+            DEVELOPMENT_TEAM=$APP_STORE_CONNECT_TEAM_ID \
             -allowProvisioningUpdates
 
       - name: Create exportOptions.plist
