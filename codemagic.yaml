@@ -33,3 +33,11 @@ workflows:
       email:
         recipients:
           - "ton-email@exemple.com"
+
+          publishing:
+  app_store_connect:
+    api_key: $APP_STORE_CONNECT_PRIVATE_KEY      # contenu du fichier .p8
+    key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER    # Key ID
+    issuer_id: $APP_STORE_CONNECT_ISSUER_ID      # Issuer ID
+    submit_to_testflight: true                   # envoi automatique sur TestFlight
+    submit_to_app_store: false                   # reste en TestFlight, tu soumets après manuellement
