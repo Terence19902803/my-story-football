@@ -1,79 +1,35 @@
 workflows:
   ios-workflow:
     name: iOS Build
-    max_build_duration: 60
     environment:
       xcode: latest
       node: 20
       cocoapods: default
-
     scripts:
-      - name: Install npm dependencies
-        script: |
-          npm install
-
-      - name: Sync Capacitor
-        script: |
-          npx cap sync ios
-
-      - name: Install CocoaPods
-        script: |
-          cd ios
-          pod install
-
-      - name: Create shared scheme
-        script: |
-          cd ios/App
-          mkdir -p App.xcodeproj/xcshareddata/xcschemes
-          echo '<?xml version="1.0" encoding="UTF-8"?>
-          <Scheme
-             LastUpgradeVersion = "9999"
-             version = "1.3">
-             <BuildAction
-                parallelizeBuildables = "YES"
-                buildImplicitDependencies = "YES">
-                <BuildActionEntries>
-                   <BuildActionEntry
-                      buildForTesting = "YES"
-                      buildForRunning = "YES"
-                      buildForProfiling = "YES"
-                      buildForArchiving = "YES"
-                      buildForAnalyzing = "YES">
-                      <BuildableReference
-                         BuildableIdentifier = "primary"
-                         BlueprintIdentifier = "App"
-                         BuildableName = "App.app"
-                         BlueprintName = "App"
-                         ReferencedContainer = "container:App.xcodeproj">
-                      </BuildableReference>
-                   </BuildActionEntry>
-                </BuildActionEntries>
-             </BuildAction>
-          </Scheme>' > App.xcodeproj/xcshareddata/xcschemes/App.xcscheme
-
-      - name: Build iOS app (archive)
-        script: |
-          xcodebuild \
-            -workspace "ios/App/App.xcworkspace" \
-            -scheme "App" \
-            -sdk iphoneos \
-            -configuration Release \
-            archive \
-            -archivePath $CM_BUILD_DIR/Runner.xcarchive \
-            DEVELOPMENT_TEAM=$APP_STORE_CONNECT_TEAM_ID \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            -allowProvisioningUpdates
-
+      - npm install
+      - npx cap sync ios
+      - cd ios && pod install
+      - xcodebuild \
+          -workspace "ios/App/App.xcworkspace" \
+          -scheme "App" \
+          -sdk iphoneos \
+          -configuration Release \
+          archive \
+          -archivePath $CM_BUILD_DIR/Runner.xcarchive \
+          -allowProvisioningUpdates
+      - xcodebuild -exportArchive \
+          -archivePath $CM_BUILD_DIR/Runner.xcarchive \
+          -exportOptionsPlist ios/exportOptions.plist \
+          -exportPath $CM_BUILD_DIR \
+          -allowProvisioningUpdates
     artifacts:
       - $CM_BUILD_DIR/*.ipa
-
+    code_signing:
+      ios:
+        automatic_code_signing: true
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
-        submit_to_app_store: false
-      email:
-        recipients:
-          - "ton-email@example.com"
