@@ -1,56 +1,45 @@
 workflows:
-  ios-build:
-    name: iOS Build
+  ios-workflow:
+    name: iOS Build & Publish
     environment:
-      xcode: 15.0
-      node: 20.11.1
+      node: 20.11.1          # Node.js LTS pour Capacitor
+      xcode: 15.2            # Version Xcode compatible iOS 17
       cocoapods: default
-      vars:
-        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
-      ios_signing:
-        certificates:
-          - MyStoryFoot_appstore
-        provisioning_profiles:
-          - MyStoryFoot_appstore
-
+    cache:
+      cache_paths:
+        - $HOME/Library/Caches/CocoaPods
+        - node_modules
     scripts:
-      - name: Install npm dependencies
+      - name: Install dependencies
         script: |
           npm install
-
       - name: Sync Capacitor
         script: |
           npx cap sync ios
-
-      - name: Install CocoaPods
-        script: |
-          cd ios/App
-          pod install
-
       - name: Build iOS app
         script: |
-          cd ios/App
+          npx cap build ios
+          cd ios
           xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
+            -sdk iphoneos \
             -configuration Release \
-            -archivePath $CM_BUILD_DIR/Build/App.xcarchive \
-            archive
-
-      - name: Export IPA
-        script: |
-          xcodebuild \
-            -exportArchive \
-            -archivePath $CM_BUILD_DIR/Build/App.xcarchive \
+            archive -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
+            DEVELOPMENT_TEAM="7B63Z5NSHR"
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ExportOptions.plist \
-            -exportPath $CM_BUILD_DIR/Build
-
+            -exportPath $CM_BUILD_DIR/ios_output
     artifacts:
-      - $CM_BUILD_DIR/Build/*.ipa
-      - $CM_BUILD_DIR/Build/*.xcarchive
-
+      - ios_output/**/*.ipa
     publishing:
       app_store_connect:
-        apple_id: "ton_email_apple@icloud.com"
-        password: "@env:APP_STORE_CONNECT_PASSWORD"
-        app_identifier: "com.terencedesrues.mystoryfootball"
+        apple_id: $APPLE_ID
+        password: $APP_STORE_CONNECT_PASSWORD
+        app_identifier: com.terencedesrues.mystoryfootball
+        bundle_identifier: com.terencedesrues.mystoryfootball
+        submit_to_testflight: true
+        submit_to_app_store: false
