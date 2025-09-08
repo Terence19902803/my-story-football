@@ -4,8 +4,8 @@ workflows:
     environment:
       node: 20
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"   # change si ton scheme a un autre nom
+        XCODE_WORKSPACE: "ios/App.xcworkspace"
+        XCODE_SCHEME: "App"   # Mets le vrai nom du scheme Xcode
     scripts:
       - name: Install dependencies
         script: npm install
@@ -31,9 +31,8 @@ workflows:
       - $CM_BUILD_DIR/ios_output/*.ipa
     publishing:
       app_store_connect:
-        api_key:
-          key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER   # exemple : 2X9R4HXF34
-          issuer_id: $APP_STORE_CONNECT_ISSUER_ID     # exemple : 57246542-96fe-1a63-e053-0824d011072a
-          private_key: $APP_STORE_CONNECT_PRIVATE_KEY # colle le contenu de ton .p8 dans une variable secrète
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du .p8
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # Key ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # Issuer ID
         submit_to_testflight: true
         submit_to_app_store: false
