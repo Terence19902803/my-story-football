@@ -1,45 +1,37 @@
 workflows:
   ios-workflow:
-    name: iOS Build & Publish
+    name: iOS Build and Publish
     environment:
-      node: 20.11.1          # Node.js LTS pour Capacitor
-      xcode: 15.2            # Version Xcode compatible iOS 17
-      cocoapods: default
-    cache:
-      cache_paths:
-        - $HOME/Library/Caches/CocoaPods
-        - node_modules
+      node: 20
+      vars:
+        XCODE_WORKSPACE: "ios/App.xcworkspace"
+        XCODE_SCHEME: "App"   # remplace par ton vrai scheme Xcode
     scripts:
       - name: Install dependencies
-        script: |
-          npm install
+        script: npm install
       - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Build iOS
         script: |
-          npx cap sync ios
-      - name: Build iOS app
-        script: |
-          npx cap build ios
-          cd ios
           xcodebuild \
-            -workspace App.xcworkspace \
-            -scheme App \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
             archive -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
-            DEVELOPMENT_TEAM="7B63Z5NSHR"
-          xcodebuild -exportArchive \
+            DEVELOPMENT_TEAM="7N63S25N5R"
+          xcodebuild \
+            -exportArchive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath $CM_BUILD_DIR/ios_output
     artifacts:
-      - ios_output/**/*.ipa
+      - $CM_BUILD_DIR/ios_output/*.ipa
     publishing:
       app_store_connect:
-        apple_id: $APPLE_ID
-        password: $APP_STORE_CONNECT_PASSWORD
-        app_identifier: com.terencedesrues.mystoryfootball
-        bundle_identifier: com.terencedesrues.mystoryfootball
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du .p8
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # Key ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # Issuer ID
         submit_to_testflight: true
-        submit_to_app_store: false
