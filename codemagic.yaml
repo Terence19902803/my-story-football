@@ -4,8 +4,8 @@ workflows:
     environment:
       node: 20
       vars:
-        XCODE_WORKSPACE: "ios/App.xcworkspace"
-        XCODE_SCHEME: "App"   # remplace par ton vrai scheme Xcode
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"   # change si ton scheme a un autre nom
     scripts:
       - name: Install dependencies
         script: npm install
@@ -22,16 +22,18 @@ workflows:
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
             DEVELOPMENT_TEAM="7N63S25N5R"
-          xcodebuild \
-            -exportArchive \
+
+          xcodebuild -exportArchive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ios_output
+            -exportPath $CM_BUILD_DIR/ios_output \
+            -allowProvisioningUpdates
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du .p8
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # Key ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # Issuer ID
+        api_key:
+          key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER   # exemple : 2X9R4HXF34
+          issuer_id: $APP_STORE_CONNECT_ISSUER_ID     # exemple : 57246542-96fe-1a63-e053-0824d011072a
+          private_key: $APP_STORE_CONNECT_PRIVATE_KEY # colle le contenu de ton .p8 dans une variable secrète
         submit_to_testflight: true
+        submit_to_app_store: false
