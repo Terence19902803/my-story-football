@@ -3,7 +3,7 @@ workflows:
     name: iOS Build
     environment:
       xcode: 15.0
-      node: 20.11.0   # Node.js >= 20 pour éviter l'erreur Capacitor
+      node: 20.11.1
       cocoapods: default
       vars:
         BUNDLE_ID: "com.terencedesrues.mystoryfootball"
