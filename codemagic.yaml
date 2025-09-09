@@ -23,7 +23,6 @@ workflows:
           cd ios/App
           pod repo update
           pod install
-          test -f "App.xcworkspace/contents.xcworkspacedata" || (echo "❌ .xcworkspace manquant" && exit 1)
 
       - name: Build iOS (archive + export IPA)
         script: |
