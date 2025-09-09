@@ -21,26 +21,33 @@ workflows:
       - name: Build iOS (archive + export IPA)
         script: |
           mkdir -p $CM_BUILD_DIR/ios_output
+
+          # Archive (signature auto + création/MAJ du profil)
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
-            -sdk iphoneos \
             -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
             archive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            DEVELOPMENT_TEAM=7N63S25N5R CODE_SIGN_STYLE=Automatic
+            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
+            DEVELOPMENT_TEAM=7N63S25N5R CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates
+
+          # Export IPA (utilise ios/exportOptions.plist)
           xcodebuild \
             -exportArchive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ios_output
+            -exportPath "$CM_BUILD_DIR/ios_output" \
+            -allowProvisioningUpdates
 
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
 
     publishing:
       app_store_connect:
-        # Ajoute bien ces 3 secrets dans Codemagic > App settings > Environment variables (secure)
+        # Doivent être renseignés dans Codemagic > App settings > Environment variables (secure)
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
