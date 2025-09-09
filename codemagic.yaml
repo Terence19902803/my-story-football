@@ -4,7 +4,8 @@ workflows:
     environment:
       xcode: 16.4
       node: 20
-
+      groups:
+        - ios_credentials
     scripts:
       - name: Install deps
         script: npm install
@@ -22,32 +23,28 @@ workflows:
         script: |
           mkdir -p $CM_BUILD_DIR/ios_output
 
-          # Archive (signature auto + création/MAJ du profil)
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
-            -configuration Release \
             -sdk iphoneos \
-            -destination "generic/platform=iOS" \
+            -configuration Release \
             archive \
-            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
-            DEVELOPMENT_TEAM=7N63S25N5R CODE_SIGN_STYLE=Automatic \
-            -allowProvisioningUpdates
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            DEVELOPMENT_TEAM=$TEAM_ID \
+            PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
+            CODE_SIGN_STYLE=Manual
 
-          # Export IPA (utilise ios/exportOptions.plist)
           xcodebuild \
             -exportArchive \
-            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath "$CM_BUILD_DIR/ios_output" \
-            -allowProvisioningUpdates
+            -exportPath $CM_BUILD_DIR/ios_output
 
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
 
     publishing:
       app_store_connect:
-        # Doivent être renseignés dans Codemagic > App settings > Environment variables (secure)
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
