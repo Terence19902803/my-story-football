@@ -2,20 +2,17 @@ workflows:
   ios-workflow:
     name: iOS Build and Publish
     environment:
-      node: 20
       xcode: latest
-      cocoapods: default
+      node: 20
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_WORKSPACE: "ios/App.xcworkspace"
         XCODE_SCHEME: "App"
     scripts:
       - name: Install dependencies
         script: npm install
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Install CocoaPods
-        script: cd ios/App && pod install && cd ../..
-      - name: Build iOS (archive + export IPA)
+      - name: Build iOS
         script: |
           xcodebuild \
             -workspace "$XCODE_WORKSPACE" \
@@ -25,18 +22,18 @@ workflows:
             archive -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
-            DEVELOPMENT_TEAM="7B535ZNRSR"
-
-          xcodebuild -exportArchive \
+            DEVELOPMENT_TEAM="7N63S25N5R"
+          xcodebuild \
+            -exportArchive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            -exportOptionsPlist ios/exportOptions.plist \
+            -exportOptionsPlist ios/App/exportOptions.plist \
             -exportPath $CM_BUILD_DIR/ios_output
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du fichier .p8
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # Key ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # Issuer ID
         submit_to_testflight: true
         submit_to_app_store: false
