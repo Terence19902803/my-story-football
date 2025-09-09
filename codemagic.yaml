@@ -2,7 +2,6 @@ workflows:
   ios-workflow:
     name: iOS Build and Publish
     environment:
-      xcode: latest
       node: 20
       vars:
         XCODE_WORKSPACE: "ios/App.xcworkspace"
@@ -10,9 +9,38 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm install
+
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Build iOS
+
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install --repo-update
+
+      - name: Prepare export & output
+        script: |
+          mkdir -p $CM_BUILD_DIR/ios_output
+          mkdir -p ios/App
+          cat > ios/App/exportOptions.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><true/>
+            <key>compileBitcode</key><false/>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.terencedesrues.mystoryfootball</key><string>MyStoryFoot_appstore</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build iOS (archive + export IPA)
         script: |
           xcodebuild \
             -workspace "$XCODE_WORKSPACE" \
@@ -28,12 +56,13 @@ workflows:
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/App/exportOptions.plist \
             -exportPath $CM_BUILD_DIR/ios_output
+
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
+
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du fichier .p8
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du .p8
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # Key ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # Issuer ID
         submit_to_testflight: true
-        submit_to_app_store: false
