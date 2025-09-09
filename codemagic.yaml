@@ -24,7 +24,7 @@ workflows:
           pod repo update
           pod install
 
-     - name: Build iOS (archive + export IPA)
+      - name: Build iOS (archive + export IPA)
       script: |
         mkdir -p $CM_BUILD_DIR/ios_output
 
