@@ -5,43 +5,48 @@ workflows:
       xcode: 16.4
       node: 20
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
+        TEAM_ID: 7B535ZN5R
+        PROFILE_SPECIFIER: MyStoryFoot_appstore
     scripts:
       - name: Install deps
         script: npm install
+
       - name: Sync Capacitor
         script: npx cap sync ios
+
       - name: Install CocoaPods (génère le .xcworkspace)
         script: |
           cd ios/App
           pod repo update
           pod install
+
       - name: Build iOS (archive + export IPA)
         script: |
-          mkdir -p $CM_BUILD_DIR/ios_output
-          
-          # Archive uniquement la cible App
+          mkdir -p $SCM_BUILD_DIR/ios_output
+
+          # Archive uniquement le target App (et pas Pods)
           xcodebuild \
-            -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
             -sdk iphoneos \
             -configuration Release \
             archive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             DEVELOPMENT_TEAM=$TEAM_ID \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
             CODE_SIGN_IDENTITY="Apple Distribution"
-          
+
           # Export IPA
           xcodebuild \
             -exportArchive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ios_output
+            -exportPath $SCM_BUILD_DIR/ios_output
+
     artifacts:
-      - $CM_BUILD_DIR/ios_output/*.ipa
+      - $SCM_BUILD_DIR/ios_output/*.ipa
+
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
