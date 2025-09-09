@@ -1,68 +1,54 @@
 workflows:
   ios-workflow:
-    name: iOS Build and Publish
+    name: iOS Build (Capacitor)
     environment:
       node: 20
       vars:
-        XCODE_WORKSPACE: "ios/App.xcworkspace"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
+        DEV_TEAM: "7B535ZNRSR"                   # <- ton Team ID (corrigé)
+        PROFILE_SPECIFIER: "MyStoryFoot_appstore" # <- nom EXACT du provisioning profile
     scripts:
       - name: Install dependencies
-        script: npm install
+        script: |
+          npm ci
 
       - name: Sync Capacitor
-        script: npx cap sync ios
-
-      - name: Install CocoaPods
         script: |
-          cd ios
-          pod install --repo-update
+          npx cap sync ios
 
-      - name: Prepare export & output
+      - name: Install CocoaPods (inside ios/App)
         script: |
-          mkdir -p $CM_BUILD_DIR/ios_output
-          mkdir -p ios/App
-          cat > ios/App/exportOptions.plist <<'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key><string>app-store</string>
-            <key>uploadSymbols</key><true/>
-            <key>manageAppVersionAndBuildNumber</key><true/>
-            <key>compileBitcode</key><false/>
-            <key>signingStyle</key><string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>com.terencedesrues.mystoryfootball</key><string>MyStoryFoot_appstore</string>
-            </dict>
-          </dict>
-          </plist>
-          EOF
+          cd ios/App
+          pod repo update
+          pod install
+          ls -la
+          test -d "App.xcworkspace" || { echo "❌ App.xcworkspace manquant"; exit 1; }
 
       - name: Build iOS (archive + export IPA)
         script: |
+          mkdir -p "$CM_BUILD_DIR/ios_output"
+
+          # Archive
           xcodebuild \
             -workspace "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
-            -sdk iphoneos \
             -configuration Release \
-            archive -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
-            DEVELOPMENT_TEAM="7N63S25N5R"
+            -sdk iphoneos \
+            archive \
+            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
+            "CODE_SIGN_IDENTITY=Apple Distribution" \
+            "DEVELOPMENT_TEAM=$DEV_TEAM" \
+            "PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER"
+
+          # Export IPA (utilise ton exportOptions.plist placé dans ios/App)
           xcodebuild \
             -exportArchive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            -exportOptionsPlist ios/App/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ios_output
+            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
+            -exportOptionsPlist "ios/App/exportOptions.plist" \
+            -exportPath "$CM_BUILD_DIR/ios_output"
 
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
-
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du .p8
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # Key ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # Issuer ID
-        submit_to_testflight: true
+      - $CM_BUILD_DIR/ios_output/**/*.dSYM.zip
+      - $CM_BUILD_DIR/ios_output/*.xcarchive
