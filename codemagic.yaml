@@ -5,8 +5,7 @@ workflows:
       xcode: 16.4
       node: 20
       groups:
-        - ios_credentials   # groupe où tu as mis tes variables (TEAM_ID, PROFILE_SPECIFIER, etc.)
-
+        - ios_credentials   # groupe où tu as mis tes variables
     scripts:
       - name: Install deps
         script: npm install
@@ -24,7 +23,7 @@ workflows:
         script: |
           mkdir -p $SCM_BUILD_DIR/ios_output
 
-          # Archive (signature auto + export IPA)
+          # Archive uniquement l'app principale (pas les Pods)
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
@@ -34,9 +33,10 @@ workflows:
             DEVELOPMENT_TEAM=$TEAM_ID \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
-            CODE_SIGN_IDENTITY="Apple Distribution"
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            OTHER_CODE_SIGN_FLAGS="--deep"
 
-          # Export IPA (utilise ios/exportOptions.plist)
+          # Export IPA
           xcodebuild \
             -exportArchive \
             -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
