@@ -28,8 +28,7 @@ workflows:
             -configuration Release \
             archive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            DEVELOPMENT_TEAM=7N63S25N5R \
-            CODE_SIGN_STYLE=Automatic
+            DEVELOPMENT_TEAM=7N63S25N5R CODE_SIGN_STYLE=Automatic
           xcodebuild \
             -exportArchive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
