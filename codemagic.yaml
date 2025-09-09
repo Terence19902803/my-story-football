@@ -2,53 +2,57 @@ workflows:
   ios-workflow:
     name: iOS Build (Capacitor)
     environment:
+      xcode: 16.4
       node: 20
       vars:
+        # chemins et identifiants
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-        DEV_TEAM: "7B535ZNRSR"                   # <- ton Team ID (corrigé)
-        PROFILE_SPECIFIER: "MyStoryFoot_appstore" # <- nom EXACT du provisioning profile
+        TEAM_ID: "7N63S25N5R"                 # ton Team ID
+        PROFILE_SPECIFIER: "MyStoryFoot_appstore"  # nom EXACT du provisioning profile
+
     scripts:
-      - name: Install dependencies
-        script: |
-          npm ci
+      - name: Install deps
+        script: npm ci
 
       - name: Sync Capacitor
-        script: |
-          npx cap sync ios
+        script: npx cap sync ios
 
-      - name: Install CocoaPods (inside ios/App)
+      - name: Install CocoaPods (génère le .xcworkspace)
         script: |
           cd ios/App
           pod repo update
           pod install
-          ls -la
-          test -d "App.xcworkspace" || { echo "❌ App.xcworkspace manquant"; exit 1; }
+          test -f "App.xcworkspace/contents.xcworkspacedata" || (echo "❌ .xcworkspace manquant" && exit 1)
 
       - name: Build iOS (archive + export IPA)
         script: |
-          mkdir -p "$CM_BUILD_DIR/ios_output"
+          mkdir -p $CM_BUILD_DIR/ios_output
 
-          # Archive
           xcodebuild \
             -workspace "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
-            -configuration Release \
             -sdk iphoneos \
+            -configuration Release \
             archive \
-            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
-            "CODE_SIGN_IDENTITY=Apple Distribution" \
-            "DEVELOPMENT_TEAM=$DEV_TEAM" \
-            "PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER"
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
+            DEVELOPMENT_TEAM="$TEAM_ID"
 
-          # Export IPA (utilise ton exportOptions.plist placé dans ios/App)
           xcodebuild \
             -exportArchive \
-            -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
-            -exportOptionsPlist "ios/App/exportOptions.plist" \
-            -exportPath "$CM_BUILD_DIR/ios_output"
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -exportOptionsPlist ios/exportOptions.plist \
+            -exportPath $CM_BUILD_DIR/ios_output
 
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
-      - $CM_BUILD_DIR/ios_output/**/*.dSYM.zip
-      - $CM_BUILD_DIR/ios_output/*.xcarchive
+
+    publishing:
+      app_store_connect:
+        # ajoute ces 3 secrets dans Codemagic > App settings > Environment variables (type: secure)
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY     # contenu du .p8 (clé API ASC)
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER   # Key ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID     # Issuer ID
+        submit_to_testflight: true
