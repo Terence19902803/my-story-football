@@ -5,7 +5,7 @@ workflows:
       xcode: 16.4
       node: 20
       groups:
-        - ios_credentials   # groupe où tu as mis tes variables
+        - ios_credentials   # groupe de variables que tu as créé dans Codemagic
 
     scripts:
       - name: Install deps
@@ -23,7 +23,7 @@ workflows:
       - name: Build iOS (archive + export IPA)
         script: |
           mkdir -p $CM_BUILD_DIR/ios_output
-          # Archive (avec ton provisioning profile et certificat)
+
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
@@ -33,10 +33,9 @@ workflows:
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             DEVELOPMENT_TEAM=$TEAM_ID \
             CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
-            CODE_SIGN_IDENTITY="Apple Distribution"
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER"
 
-          # Export IPA
           xcodebuild \
             -exportArchive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
