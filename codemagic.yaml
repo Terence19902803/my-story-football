@@ -13,7 +13,7 @@ workflows:
 
     scripts:
       - name: Install deps
-        script: npm ci
+        script: npm install
 
       - name: Sync Capacitor
         script: npx cap sync ios
