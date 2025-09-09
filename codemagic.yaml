@@ -5,7 +5,7 @@ workflows:
       xcode: 16.4
       node: 20
       groups:
-        - ios_credentials   # groupe de variables que tu as créé dans Codemagic
+        - ios_credentials   # groupe où tu as mis tes variables (TEAM_ID, PROFILE_SPECIFIER, etc.)
 
     scripts:
       - name: Install deps
@@ -22,28 +22,29 @@ workflows:
 
       - name: Build iOS (archive + export IPA)
         script: |
-          mkdir -p $CM_BUILD_DIR/ios_output
+          mkdir -p $SCM_BUILD_DIR/ios_output
 
+          # Archive (signature auto + export IPA)
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
             -sdk iphoneos \
             -configuration Release \
-            archive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             DEVELOPMENT_TEAM=$TEAM_ID \
             CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER"
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
 
+          # Export IPA (utilise ios/exportOptions.plist)
           xcodebuild \
             -exportArchive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ios_output
+            -exportPath $SCM_BUILD_DIR/ios_output
 
     artifacts:
-      - $CM_BUILD_DIR/ios_output/*.ipa
+      - $SCM_BUILD_DIR/ios_output/*.ipa
 
     publishing:
       app_store_connect:
