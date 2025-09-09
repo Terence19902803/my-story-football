@@ -4,8 +4,12 @@ workflows:
     environment:
       xcode: 16.4
       node: 20
-    groups:
-      - ios_credentials   # ton groupe de variables (TEAM_ID, PROFILE_SPECIFIER, etc.)
+      vars:
+        TEAM_ID: $TEAM_ID
+        PROFILE_SPECIFIER: $PROFILE_SPECIFIER
+        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
 
     scripts:
       - name: Install deps
