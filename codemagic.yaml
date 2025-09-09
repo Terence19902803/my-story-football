@@ -4,12 +4,12 @@ workflows:
     environment:
       xcode: 16.4
       node: 20
-      vars:
-        # chemins et identifiants
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-        TEAM_ID: "7N63S25N5R"                 # ton Team ID
-        PROFILE_SPECIFIER: "MyStoryFoot_appstore"  # nom EXACT du provisioning profile
+    vars:
+      # chemins et identifiants
+      XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+      XCODE_SCHEME: "App"
+      TEAM_ID: "7N63S25N5R"          # ton Team ID
+      PROFILE_SPECIFIER: "MyStoryFoot_appstore"   # nom EXACT du provisioning profile
 
     scripts:
       - name: Install deps
@@ -25,28 +25,30 @@ workflows:
           pod install
 
       - name: Build iOS (archive + export IPA)
-         script: |
+        script: |
           mkdir -p $CM_BUILD_DIR/ios_output
           xcodebuild \
-          -workspace "ios/App/App.xcworkspace" \
-          -scheme "App" \
-          -sdk iphoneos \
-          -configuration Release \
-          archive \
-          -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-          DEVELOPMENT_TEAM=$TEAM_ID \
-          CODE_SIGN_STYLE=Automatic
+            -workspace "ios/App/App.xcworkspace" \
+            -scheme "App" \
+            -sdk iphoneos \
+            -configuration Release \
+            archive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            DEVELOPMENT_TEAM=$TEAM_ID \
+            CODE_SIGN_STYLE=Automatic
           xcodebuild \
-          -exportArchive \
-          -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-          -exportOptionsPlist ios/exportOptions.plist \
-          -exportPath $CM_BUILD_DIR/ios_output
-          - $CM_BUILD_DIR/ios_output/*.ipa 
+            -exportArchive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -exportOptionsPlist ios/exportOptions.plist \
+            -exportPath $CM_BUILD_DIR/ios_output
+
+    artifacts:
+      - $CM_BUILD_DIR/ios_output/*.ipa
 
     publishing:
       app_store_connect:
         # ajoute ces 3 secrets dans Codemagic > App settings > Environment variables (type: secure)
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY     # contenu du .p8 (clé API ASC)
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER   # Key ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID     # Issuer ID
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contenu du .p8 (clé API ASC)
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # Key ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # Issuer ID
         submit_to_testflight: true
