@@ -1,1 +1,10 @@
-
+- name: build ios (archive + export IPA)
+  script: |
+    mkdir -p "$CM_BUILD_DIR/ios_output"
+    xcodebuild \
+      -workspace "ios/App/App.xcworkspace" \
+      -scheme "App" \
+      -configuration Release \
+      -sdk iphoneos \
+      -archivePath "$CM_BUILD_DIR/ios_output/App.xcarchive" \
+      archive DEVELOPMENT_TEAM=7M63J35SRM CODE_SIGN_STYLE=Automatic
