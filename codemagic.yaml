@@ -24,27 +24,25 @@ workflows:
           pod repo update
           pod install
 
-      - name: Build iOS (archive + export IPA)
-        script: |
-          mkdir -p $CM_BUILD_DIR/ios_output
+         - name: Build iOS (archive + export IPA)
+      script: |
+        mkdir -p $CM_BUILD_DIR/ios_output
 
-          xcodebuild \
-            -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
-            -sdk iphoneos \
-            -configuration Release \
-            archive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
-            DEVELOPMENT_TEAM="$TEAM_ID"
+        xcodebuild \
+          -workspace "ios/App/App.xcworkspace" \
+          -scheme "App" \
+          -sdk iphoneos \
+          -configuration Release \
+          archive \
+          -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+          DEVELOPMENT_TEAM=$TEAM_ID \
+          CODE_SIGN_STYLE=Automatic
 
-          xcodebuild \
-            -exportArchive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ios_output
-
+        xcodebuild \
+          -exportArchive \
+          -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+          -exportOptionsPlist ios/exportOptions.plist \
+          -exportPath $CM_BUILD_DIR/ios_output
     artifacts:
       - $CM_BUILD_DIR/ios_output/*.ipa
 
