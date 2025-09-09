@@ -5,7 +5,8 @@ workflows:
       xcode: 16.4
       node: 20
       groups:
-        - ios_credentials   # ton groupe de variables sur Codemagic
+        - ios_credentials   # ton groupe d'env variables (TEAM_ID, PROFILE_SPECIFIER, etc.)
+
     scripts:
       - name: Install deps
         script: npm install
@@ -22,6 +23,8 @@ workflows:
       - name: Build iOS (archive + export IPA)
         script: |
           mkdir -p $SCM_BUILD_DIR/ios_output
+
+          # Archive l'app
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
@@ -34,11 +37,13 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
+          # Export IPA avec exportOptions.plist
           xcodebuild \
             -exportArchive \
             -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
             -exportPath $SCM_BUILD_DIR/ios_output
+
     artifacts:
       - $SCM_BUILD_DIR/ios_output/*.ipa
 
