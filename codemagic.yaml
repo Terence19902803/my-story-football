@@ -1,52 +1,40 @@
 workflows:
   ios-workflow:
-    name: iOS Build (Capacitor)
+    name: iOS Build
     environment:
-      xcode: 16.4
-      node: 20
       vars:
-        TEAM_ID: $TEAM_ID
-        PROFILE_SPECIFIER: $PROFILE_SPECIFIER
+        TEAM_ID: 785S52NSR
+        PROFILE_SPECIFIER: MyStoryFoot_appstore
+      xcode: latest
+      cocoapods: default
     scripts:
-      - name: Install deps
-        script: npm install
-
-      - name: Sync Capacitor
-        script: npx cap sync ios
-
-      - name: Install CocoaPods (génère le .xcworkspace)
+      - name: Post-clone fix
         script: |
-          cd ios/App
-          pod repo update
-          pod install
+          chmod +x ios/post-clone.sh
+          ./ios/post-clone.sh
 
-      - name: Build iOS (archive + export IPA)
+      - name: Install dependencies
         script: |
-          mkdir -p $SCM_BUILD_DIR/ios_output
+          npm install
+          npx cap sync ios
+
+      - name: Build iOS
+        script: |
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
             -sdk iphoneos \
             -configuration Release \
-            archive \
-            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             DEVELOPMENT_TEAM=$TEAM_ID \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
-            CODE_SIGN_IDENTITY="Apple Distribution"
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            archive -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive
 
+      - name: Export IPA
+        script: |
           xcodebuild \
             -exportArchive \
-            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $SCM_BUILD_DIR/ios_output
-
-    artifacts:
-      - $SCM_BUILD_DIR/ios_output/*.ipa
-
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
+            -exportPath $CM_BUILD_DIR/ios_output
