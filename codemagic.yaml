@@ -4,6 +4,9 @@ workflows:
     environment:
       xcode: 16.4
       node: 20
+      vars:
+        TEAM_ID: $TEAM_ID
+        PROFILE_SPECIFIER: $PROFILE_SPECIFIER
     scripts:
       - name: Install deps
         script: npm install
@@ -20,8 +23,6 @@ workflows:
       - name: Build iOS (archive + export IPA)
         script: |
           mkdir -p $SCM_BUILD_DIR/ios_output
-          
-          # Archive uniquement le target App
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
@@ -34,7 +35,6 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
-          # Export IPA
           xcodebuild \
             -exportArchive \
             -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
