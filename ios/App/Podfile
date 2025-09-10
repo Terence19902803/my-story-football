@@ -5,8 +5,4 @@ use_modular_headers!
 target 'App' do
   pod 'Capacitor'
   pod 'CapacitorCordova'
-  
-  # ⚡️ ajoute ici d’autres pods si ton app en a besoin
-  # pod 'Firebase/Core'
-  # pod 'Firebase/Auth'
 end
