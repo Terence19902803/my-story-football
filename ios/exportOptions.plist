@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
   <key>method</key>
   <string>app-store</string>
   <key>teamID</key>
-  <string>${TEAM_ID}</string>
-  <key>signingStyle</key>
-  <string>manual</string>
+  <string>785S52NSR</string>
   <key>provisioningProfiles</key>
   <dict>
-    <key>com.terencedesrues.mystoryfootball</key>
-    <string>${PROFILE_SPECIFIER}</string>
+    <key>com.terencedesures.mystoryfootball</key>
+    <string>MyStoryFoot_appstore</string>
   </dict>
+  <key>signingStyle</key>
+  <string>manual</string>
+  <key>compileBitcode</key>
+  <false/>
   <key>uploadSymbols</key>
   <true/>
-  <key>compileBitcode</key>
+  <key>uploadBitcode</key>
   <false/>
 </dict>
 </plist>
