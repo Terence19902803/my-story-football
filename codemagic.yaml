@@ -12,12 +12,15 @@ workflows:
         BUNDLE_ID: "com.terencedesrues.mystoryfootball"
         TEAM_ID: $TEAM_ID
         PROFILE_SPECIFIER: $PROFILE_SPECIFIER
-    scripts:
-      - name: Install dependencies
-        script: |
-          npm install
-          npx cap sync ios
-          cd ios/App && pod install && cd ../..
+    - name: Install dependencies
+  script: |
+    npm install
+    npx cap sync ios
+    cd ios/App
+    rm -rf Pods Podfile.lock
+    pod repo update
+    pod install
+    cd ../..
       - name: Set up keychain
         script: |
           keychain initialize
