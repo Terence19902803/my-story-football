@@ -1,36 +1,42 @@
 workflows:
   ios-workflow:
     name: iOS Build
+    max_build_duration: 60
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.terencedesrues.mystoryfootball"
       vars:
-        TEAM_ID: 785S52NSR
-        PROFILE_SPECIFIER: MyStoryFoot_appstore
-      xcode: latest
-      cocoapods: default
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
+        TEAM_ID: $TEAM_ID
+        PROFILE_SPECIFIER: $PROFILE_SPECIFIER
     scripts:
-      - name: Post-clone fix
-        script: |
-          chmod +x ios/post-clone.sh
-          ./ios/post-clone.sh
-
       - name: Install dependencies
         script: |
           npm install
           npx cap sync ios
-
+          cd ios && pod install --repo-update && cd ..
+      - name: Post-clone fix
+        script: |
+          chmod +x ios/post-clone.sh
+          sh ios/post-clone.sh
       - name: Build iOS
         script: |
           xcodebuild \
-            -workspace "ios/App/App.xcworkspace" \
-            -scheme "App" \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
-            DEVELOPMENT_TEAM=$TEAM_ID \
+            archive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
             CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            archive -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive
-
+            CODE_SIGN_IDENTITY="Apple Distribution"
       - name: Export IPA
         script: |
           xcodebuild \
@@ -38,3 +44,7 @@ workflows:
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
             -exportPath $CM_BUILD_DIR/ios_output
+    artifacts:
+      - $CM_BUILD_DIR/ios_output/*.ipa
+      - $CM_BUILD_DIR/ios_output/*.dSYM.zip
+      - $CM_BUILD_DIR/ios_output/*.xcarchive
