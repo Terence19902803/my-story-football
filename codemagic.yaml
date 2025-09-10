@@ -6,12 +6,12 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.terencedesrues.mystoryfootball"
-    vars:
-      XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-      XCODE_SCHEME: "App"
-      BUNDLE_ID: "com.terencedesrues.mystoryfootball"
-      TEAM_ID: $TEAM_ID
-      PROFILE_SPECIFIER: $PROFILE_SPECIFIER
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
+        TEAM_ID: $TEAM_ID
+        PROFILE_SPECIFIER: $PROFILE_SPECIFIER
     scripts:
       - name: Install dependencies
         script: |
