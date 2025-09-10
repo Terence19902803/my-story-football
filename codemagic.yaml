@@ -9,6 +9,7 @@ workflows:
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
         TEAM_ID: $TEAM_ID
         PROFILE_SPECIFIER: $PROFILE_SPECIFIER
     scripts:
@@ -16,7 +17,12 @@ workflows:
         script: |
           npm install
           npx cap sync ios
-          cd ios/App && pod install && cd ../..
+          cd ios/App
+          rm -rf Pods Podfile.lock
+          sudo gem install cocoapods -v 1.15.2
+          pod repo update
+          pod install
+          cd ../..
       - name: Set up keychain
         script: |
           keychain initialize
