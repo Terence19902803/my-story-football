@@ -19,7 +19,6 @@ workflows:
           npx cap sync ios
           cd ios/App
           rm -rf Pods Podfile.lock
-          sudo gem install cocoapods -v 1.15.2
           pod repo update
           pod install
           cd ../..
@@ -34,15 +33,15 @@ workflows:
             -sdk iphoneos \
             -configuration Release \
             archive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             DEVELOPMENT_TEAM="$TEAM_ID" \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
           xcodebuild -exportArchive \
-            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ios_output
+            -exportPath $SCM_BUILD_DIR/ios_output
     artifacts:
       - ios_output/*.ipa
       - ios_output/*.xcarchive
