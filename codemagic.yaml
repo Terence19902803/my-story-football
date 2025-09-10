@@ -20,11 +20,11 @@ workflows:
       - name: Build iOS (archive + export IPA)
         script: |
           mkdir -p $SCM_BUILD_DIR/ios_output
-
-          # Archive uniquement le target App (pas les Pods)
+          
+          # Archive uniquement le target App
           xcodebuild \
-            -workspace ios/App/App.xcworkspace \
-            -scheme App \
+            -workspace "ios/App/App.xcworkspace" \
+            -scheme "App" \
             -sdk iphoneos \
             -configuration Release \
             archive \
@@ -34,7 +34,7 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
-          # Export IPA avec exportOptions.plist
+          # Export IPA
           xcodebuild \
             -exportArchive \
             -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
