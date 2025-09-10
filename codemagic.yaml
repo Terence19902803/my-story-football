@@ -1,29 +1,22 @@
 workflows:
-  ios-workflow:
+  ios-build:
     name: iOS Build
-    max_build_duration: 60
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: "com.terencedesrues.mystoryfootball"
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
-        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
-        TEAM_ID: $TEAM_ID
-        PROFILE_SPECIFIER: $PROFILE_SPECIFIER
+        BUNDLE_ID: "com.terencedesures.mystoryfootball"
+      xcode: latest
+      cocoapods: default
     scripts:
       - name: Install dependencies
         script: |
           npm install
-          npx cap sync ios
-          cd ios && pod install --repo-update && cd ..
-      - name: Post-clone fix
+          npx pod-install ios
+      - name: Run post-clone script
         script: |
           chmod +x ios/post-clone.sh
-          sh ios/post-clone.sh
+          ./ios/post-clone.sh
       - name: Build iOS
         script: |
           xcodebuild \
@@ -33,18 +26,21 @@ workflows:
             -configuration Release \
             archive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
+            DEVELOPMENT_TEAM=$TEAM_ID \
             CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
             CODE_SIGN_IDENTITY="Apple Distribution"
       - name: Export IPA
         script: |
-          xcodebuild \
-            -exportArchive \
+          xcodebuild -exportArchive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
             -exportPath $CM_BUILD_DIR/ios_output
     artifacts:
-      - $CM_BUILD_DIR/ios_output/*.ipa
-      - $CM_BUILD_DIR/ios_output/*.dSYM.zip
-      - $CM_BUILD_DIR/ios_output/*.xcarchive
+      - ios_output/*.ipa
+    publishing:
+      app_store_connect:
+        apple_id: $APPLE_ID
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APPLE_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APPLE_STORE_CONNECT_ISSUER_ID
