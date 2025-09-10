@@ -4,9 +4,6 @@ workflows:
     environment:
       xcode: 16.4
       node: 20
-      vars:
-        TEAM_ID: 7B535ZN5R
-        PROFILE_SPECIFIER: MyStoryFoot_appstore
     scripts:
       - name: Install deps
         script: npm install
@@ -24,7 +21,7 @@ workflows:
         script: |
           mkdir -p $SCM_BUILD_DIR/ios_output
 
-          # Archive uniquement le target App (et pas Pods)
+          # Archive uniquement le target App (pas les Pods)
           xcodebuild \
             -workspace ios/App/App.xcworkspace \
             -scheme App \
@@ -37,7 +34,7 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
-          # Export IPA
+          # Export IPA avec exportOptions.plist
           xcodebuild \
             -exportArchive \
             -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
