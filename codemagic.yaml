@@ -6,12 +6,11 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.terencedesrues.mystoryfootball"
-    vars:
-      XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-      XCODE_SCHEME: "App"
-      BUNDLE_ID: "com.terencedesrues.mystoryfootball"
-      TEAM_ID: $TEAM_ID
-      PROFILE_SPECIFIER: $PROFILE_SPECIFIER
+      xcode_workspace: "ios/App/App.xcworkspace"
+      xcode_scheme: "MyStoryFootball"
+      bundle_id: "com.terencedesrues.mystoryfootball"
+      team_id: $TEAM_ID
+      profile_specifier: $PROFILE_SPECIFIER
     scripts:
       - name: Install dependencies
         script: |
@@ -28,20 +27,20 @@ workflows:
         script: |
           mkdir -p ios_output
           xcodebuild \
-            -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
+            -workspace "$xcode_workspace" \
+            -scheme "$xcode_scheme" \
             -sdk iphoneos \
             -configuration Release \
             archive \
-            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
+            DEVELOPMENT_TEAM=$team_id \
+            PROVISIONING_PROFILE_SPECIFIER=$profile_specifier \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
           xcodebuild -exportArchive \
-            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $SCM_BUILD_DIR/ios_output
+            -exportPath $CM_BUILD_DIR/ios_output
     artifacts:
       - ios_output/*.ipa
       - ios_output/*.xcarchive
