@@ -18,10 +18,10 @@ workflows:
           npm install
           npx cap sync ios
           cd ios/App
-          rm -rf Pods Podfile.lock
+          rm -f Pods/Podfile.lock || true
           pod repo update
           pod install
-          cd ../..
+          cd ../../
       - name: Set up keychain
         script: keychain initialize
       - name: Build iOS
@@ -34,8 +34,8 @@ workflows:
             -configuration Release \
             archive \
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
-            DEVELOPMENT_TEAM=$TEAM_ID \
-            PROVISIONING_PROFILE_SPECIFIER=$PROFILE_SPECIFIER \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
           xcodebuild -exportArchive \
@@ -49,4 +49,4 @@ workflows:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        issuer_id: $APPLE_STORE_CONNECT_ISSUER_ID
