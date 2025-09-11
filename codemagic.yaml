@@ -6,12 +6,12 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.terencedesrues.mystoryfootball"
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "MyStoryFootball"
-        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
-        TEAM_ID: $TEAM_ID
-        PROFILE_SPECIFIER: $PROFILE_SPECIFIER
+    vars:
+      XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+      XCODE_SCHEME: "MyStoryFootball"
+      BUNDLE_ID: "com.terencedesrues.mystoryfootball"
+      TEAM_ID: $TEAM_ID
+      PROFILE_SPECIFIER: $PROFILE_SPECIFIER
     scripts:
       - name: Install dependencies
         script: |
@@ -23,8 +23,7 @@ workflows:
           pod install
           cd ../..
       - name: Set up keychain
-        script: |
-          keychain initialize
+        script: keychain initialize
       - name: Build iOS
         script: |
           mkdir -p ios_output
@@ -34,20 +33,20 @@ workflows:
             -sdk iphoneos \
             -configuration Release \
             archive \
-            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             DEVELOPMENT_TEAM="$TEAM_ID" \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
           xcodebuild -exportArchive \
-            -archivePath $SCM_BUILD_DIR/ios_output/App.xcarchive \
+            -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $SCM_BUILD_DIR/ios_output
+            -exportPath $CM_BUILD_DIR/ios_output
     artifacts:
       - ios_output/*.ipa
       - ios_output/*.xcarchive
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APPLE_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APPLE_STORE_CONNECT_ISSUER_ID
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
