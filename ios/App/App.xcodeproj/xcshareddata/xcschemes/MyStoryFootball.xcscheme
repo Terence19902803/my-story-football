@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "504EC3031FED79650816851F"
-               BuildableName = "MyStoryFootball.app"
-               BlueprintName = "MyStoryFootball"
+               BlueprintIdentifier = "YOUR_BLUEPRINT_ID"
+               BuildableName = "App.app"
+               BlueprintName = "App"
                ReferencedContainer = "container:App.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,9 +44,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "504EC3031FED79650816851F"
-            BuildableName = "MyStoryFootball.app"
-            BlueprintName = "MyStoryFootball"
+            BlueprintIdentifier = "YOUR_BLUEPRINT_ID"
+            BuildableName = "App.app"
+            BlueprintName = "App"
             ReferencedContainer = "container:App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -61,9 +61,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "504EC3031FED79650816851F"
-            BuildableName = "MyStoryFootball.app"
-            BlueprintName = "MyStoryFootball"
+            BlueprintIdentifier = "YOUR_BLUEPRINT_ID"
+            BuildableName = "App.app"
+            BlueprintName = "App"
             ReferencedContainer = "container:App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
