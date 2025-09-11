@@ -8,10 +8,11 @@ workflows:
         bundle_identifier: "com.terencedesrues.mystoryfootball"
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App“
+        XCODE_SCHEME: "App"
         BUNDLE_ID: "com.terencedesrues.mystoryfootball"
         TEAM_ID: $TEAM_ID
         PROFILE_SPECIFIER: $PROFILE_SPECIFIER
+
     scripts:
       - name: Install dependencies
         script: |
@@ -22,8 +23,10 @@ workflows:
           pod repo update
           pod install
           cd ../..
+
       - name: Set up keychain
         script: keychain initialize
+
       - name: Build iOS
         script: |
           mkdir -p ios_output
@@ -42,9 +45,11 @@ workflows:
             -archivePath $CM_BUILD_DIR/ios_output/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
             -exportPath $CM_BUILD_DIR/ios_output
+
     artifacts:
       - ios_output/*.ipa
       - ios_output/*.xcarchive
+
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
