@@ -1,4 +1,5 @@
-platform :ios, '14.0'
+platform :ios, '13.0'
+
 use_frameworks!
 use_modular_headers!
 
