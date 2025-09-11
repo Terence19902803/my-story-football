@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "504EC3031FED79650816851F"
-               BuildableName = "App.app"
-               BlueprintName = "App"
+               BuildableName = "MyStoryFootball.app"
+               BlueprintName = "MyStoryFootball"
                ReferencedContainer = "container:App.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "504EC3031FED79650816851F"
-            BuildableName = "App.app"
-            BlueprintName = "App"
+            BuildableName = "MyStoryFootball.app"
+            BlueprintName = "MyStoryFootball"
             ReferencedContainer = "container:App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -62,8 +62,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "504EC3031FED79650816851F"
-            BuildableName = "App.app"
-            BlueprintName = "App"
+            BuildableName = "MyStoryFootball.app"
+            BlueprintName = "MyStoryFootball"
             ReferencedContainer = "container:App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
