@@ -1,39 +1,44 @@
 workflows:
-  ios-workflow:
+  ios-build:
     name: iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
     environment:
+      ios_signing:
+        provisioning_profiles:
+          - MyStoryFoot_appstore
+        certificates:
+          - MY_CERTIFICATE
       xcode: latest
       cocoapods: default
-      vars:
-        XCODE_PROJECT: "MyStoryFootball/App.xcodeproj"
-        XCODE_SCHEME: "MyStoryFootball"
-        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
+
     scripts:
-      - name: Install CocoaPods
+      - name: Install dependencies
         script: |
-          cd MyStoryFootball
+          cd App
           pod install
+
       - name: Build iOS
         script: |
+          cd App
           xcodebuild \
-            -workspace MyStoryFootball/App.xcworkspace \
-            -scheme "$XCODE_SCHEME" \
-            -sdk iphoneos \
+            -workspace App.xcworkspace \
+            -scheme App \
             -configuration Release \
-            CODE_SIGN_STYLE=Manual \
+            -archivePath $CM_BUILD_DIR/App.xcarchive archive \
             DEVELOPMENT_TEAM=7B535ZNRSR \
-            PRODUCT_BUNDLE_IDENTIFIER=$BUNDLE_ID \
-            PROVISIONING_PROFILE_SPECIFIER=MyStoryFoot_appstore \
-            archive -archivePath $CM_BUILD_DIR/ios_archive.xcarchive
-      - name: Export IPA
+            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
+
+      - name: Export .ipa
         script: |
+          cd App
           xcodebuild -exportArchive \
-            -archivePath $CM_BUILD_DIR/ios_archive.xcarchive \
-            -exportOptionsPlist MyStoryFootball/exportOptions.plist \
-            -exportPath $CM_BUILD_DIR/ipa
+            -archivePath $CM_BUILD_DIR/App.xcarchive \
+            -exportPath $CM_BUILD_DIR \
+            -exportOptionsPlist exportOptions.plist
+
     artifacts:
-      - $CM_BUILD_DIR/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - "ton-email@exemple.com"
+      - $CM_BUILD_DIR/*.ipa
+      - $CM_BUILD_DIR/App.xcarchive
