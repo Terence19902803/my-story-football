@@ -21,8 +21,9 @@ workflows:
           ls -la client/
           npm run build
           ls -la dist/
-      - name: Capacitor sync iOS
+      - name: Add iOS platform and sync
         script: |
+          npx @capacitor/cli add ios
           npx @capacitor/cli sync ios
       - name: Install CocoaPods
         script: |
