@@ -2,8 +2,7 @@ workflows:
   ios-workflow:
     name: iOS Build
     environment:
-      ios:
-        xcode: latest
+      xcode: latest
       vars:
         BUNDLE_ID: "com.terencestories.mystoryfootball"
         APPLE_TEAM_ID: "7853SZN5R"
