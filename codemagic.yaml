@@ -36,12 +36,11 @@ workflows:
         script: |
           cd ios/App
           xcodebuild archive \
-            -project App.xcodeproj \
+            -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath build/App.xcarchive \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="$CM_CERTIFICATE_TEAM_ID" \
             PROVISIONING_PROFILE_SPECIFIER="$CM_PROVISIONING_PROFILE"
           xcodebuild -exportArchive \
