@@ -1,0 +1,33 @@
+workflows:
+  ios-workflow:
+    name: iOS Build
+    environment:
+      xcode: latest
+      cocoapods: default
+      vars:
+        XCODE_WORKSPACE: "App.xcworkspace"
+        XCODE_SCHEME: "App"
+    scripts:
+      - name: Install dependencies
+        script: |
+          pod install
+      - name: Build ipa
+        script: |
+          xcodebuild clean archive \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/ios_archive.xcarchive \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM=7853ZSNSR \
+            PROVISIONING_PROFILE_SPECIFIER="ios_distribution"
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/ios_archive.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath $CM_BUILD_DIR
+    artifacts:
+      - $CM_BUILD_DIR/*.ipa
+    publishing:
+      email:
+        recipients:
+          - "ton.email@exemple.com"
