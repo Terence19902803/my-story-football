@@ -16,6 +16,7 @@ workflows:
       - name: Install npm dependencies
         script: |
           npm install
+          npm install -g @capacitor/cli
       - name: Build React app
         script: |
           ls -la client/
@@ -23,8 +24,8 @@ workflows:
           ls -la dist/
       - name: Add iOS platform and sync
         script: |
-          npx @capacitor/cli add ios
-          npx @capacitor/cli sync ios
+          cap add ios
+          cap sync ios
       - name: Install CocoaPods
         script: |
           cd ios/App
