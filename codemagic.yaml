@@ -30,7 +30,7 @@ workflows:
           echo "All files ready for Capacitor!"
       - name: Add iOS platform
         script: |
-          npx cap add ios --confirm
+          npx cap add ios 
       - name: Sync Capacitor
         script: |
           npx cap sync ios
