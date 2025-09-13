@@ -1,9 +1,8 @@
 workflows:
   ios-workflow:
-    name: iOS Build
+    name: iOS Build (direct)
     environment:
       xcode: latest
-      node: 18
       cocoapods: default
       vars:
         BUNDLE_ID: "com.terencestories.mystoryfootball"
@@ -11,21 +10,13 @@ workflows:
         CODE_SIGN_IDENTITY: "Apple Distribution"
         PROVISIONING_PROFILE_SPECIFIER: "MyStoryFootball_Provision"
     scripts:
-      - name: Install npm dependencies
-        script: |
-          cd MyStoryFootball
-          npm install
-      - name: Capacitor sync
-        script: |
-          cd MyStoryFootball
-          npx cap sync ios
       - name: Install CocoaPods
         script: |
-          cd MyStoryFootball/ios
+          cd MyStoryFootball
           pod install --repo-update
       - name: Build ipa
         script: |
-          cd MyStoryFootball/ios
+          cd MyStoryFootball
           xcodebuild \
             -workspace "App.xcworkspace" \
             -scheme "App" \
@@ -38,6 +29,6 @@ workflows:
           xcodebuild -exportArchive \
             -archivePath $CM_BUILD_DIR/build/App.xcarchive \
             -exportPath $CM_BUILD_DIR/build \
-            -exportOptionsPlist ../exportOptions.plist
+            -exportOptionsPlist exportOptions.plist
     artifacts:
       - build/*.ipa
