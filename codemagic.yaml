@@ -3,14 +3,18 @@ workflows:
     name: iOS Build
     environment:
       xcode: latest
-      cocoapods: default
       vars:
         XCODE_WORKSPACE: "App/App.xcworkspace"
         XCODE_SCHEME: "App"
     scripts:
-      - name: Install dependencies
+      - name: Install npm dependencies
         script: |
           npm install
+      - name: Capacitor sync
+        script: |
+          npx cap sync ios
+      - name: Install CocoaPods
+        script: |
           cd App
           pod install
       - name: Build iOS
@@ -27,7 +31,3 @@ workflows:
     artifacts:
       - ios_build/**/*.xcarchive
       - $CM_BUILD_DIR/ios_build/**/*.ipa
-    publishing:
-      email:
-        recipients:
-          - "tonemail@exemple.com"
