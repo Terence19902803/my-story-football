@@ -2,35 +2,32 @@ workflows:
   ios-workflow:
     name: iOS Build
     environment:
+      xcode: latest
+      cocoapods: default
       vars:
         XCODE_WORKSPACE: "App/App.xcworkspace"
         XCODE_SCHEME: "App"
-        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
-      xcode: latest
-      node: latest
-      cocoapods: default
     scripts:
-      - name: Install npm dependencies
+      - name: Install dependencies
         script: |
-          cd App
           npm install
-      - name: Install CocoaPods
-        script: |
           cd App
           pod install
       - name: Build iOS
         script: |
           xcodebuild \
-            -workspace "App/App.xcworkspace" \
-            -scheme "App" \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
+            archive -archivePath $CM_BUILD_DIR/ios_build/App.xcarchive \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM=7B535ZNRSR \
-            PROVISIONING_PROFILE_SPECIFIER=MyStoryFoot_appstore
+            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore"
     artifacts:
-      - App/build/ios/ipa/*.ipa
+      - ios_build/**/*.xcarchive
+      - $CM_BUILD_DIR/ios_build/**/*.ipa
     publishing:
-      app_store_connect:
-        apple_id: $APPLE_ID
-        password: $APP_SPECIFIC_PASSWORD
+      email:
+        recipients:
+          - "tonemail@exemple.com"
