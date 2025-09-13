@@ -15,7 +15,7 @@ workflows:
     scripts:
       - name: Install npm dependencies
         script: |
-          npm ci
+          npm install
       - name: Build React app
         script: |
           npm run build
