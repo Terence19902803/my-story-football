@@ -1,61 +1,63 @@
 workflows:
-  ios-test:
-    name: iOS Test Build - My Story Football
+  ios-app-store:
+    name: iOS App Store - My Story Football
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.terencedesrues.mystoryfootball
+        signing_config: automatic
       vars:
-        BUNDLE_ID: "com.terencedesrues.mystoryfootball"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-      node: 20.12.0
-      xcode: latest
-      cocoapods: default
+        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+        APP_STORE_CONNECT_KEY_ID: $APP_STORE_CONNECT_KEY_ID
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
+      xcode: 15.0
+      node: 20.0.0
     scripts:
-      - name: Debug environment
+      - name: Install npm dependencies
         script: |
-          pwd
-          ls -la
-          cat package.json | grep -A5 '"scripts"'
-          npm --version
-          node --version
-      - name: Install only Capacitor dependencies
+          npm ci
+      - name: Build React app
         script: |
-          npm install @capacitor/core @capacitor/cli @capacitor/ios --legacy-peer-deps
-      - name: Verify pre-built files
-        script: |
-          echo "Using pre-built files from dist/..."
-          ls -la dist/
-          ls -la dist/public/
-          echo "All files ready for Capacitor!"
-      - name: Add iOS platform
-        script: |
-          npx cap add ios 
-      - name: Sync Capacitor
+          npm run build
+      - name: Capacitor sync iOS
         script: |
           npx cap sync ios
-      - name: Set Bundle ID
+      - name: Install CocoaPods
         script: |
-          cd ios/App && /usr/libexec/PlistBuddy -c "Set :PRODUCT_BUNDLE_IDENTIFIER $BUNDLE_ID" App.xcodeproj/project.pbxproj || echo "Bundle ID set via other method"
-      - name: Install CocoaPods dependencies
+          cd ios/App
+          pod install
+      - name: Build iOS archive
         script: |
-          cd ios/App && pod install
-      - name: Build iOS app (unsigned)
-        script: |
-          cd ios/App && xcodebuild \
+          cd ios/App
+          xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
-            -destination generic/platform=iOS \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
             -archivePath build/App.xcarchive \
-            archive \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            DEVELOPMENT_TEAM="$CM_CERTIFICATE_TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$CM_PROVISIONING_PROFILE"
+      - name: Export IPA
+        script: |
+          cd ios/App
+          xcodebuild -exportArchive \
+            -archivePath build/App.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist exportOptions.plist
+          ls -la build/ipa/
+          find build/ -name "*.ipa" -type f
     artifacts:
-      - ios/App/build/**/*.xcarchive
-      - /tmp/xcodebuild_logs/*.log
+      - ios/App/build/**/*.ipa
+      - ios/App/build/*.ipa  
+      - ios/App/build/App.xcarchive
+      - $CM_BUILD_DIR/build/ios/ipa/*.ipa
     publishing:
-      email:
-        recipients:
-          - user@example.com
-        notify:
-          success: true
-          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
