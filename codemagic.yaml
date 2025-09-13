@@ -23,7 +23,7 @@ workflows:
           ls -la dist/
       - name: Capacitor sync iOS
         script: |
-          npx cap sync ios
+          npx @capacitor/cli sync ios
       - name: Install CocoaPods
         script: |
           cd ios/App
