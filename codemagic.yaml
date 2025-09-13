@@ -3,6 +3,8 @@ workflows:
     name: iOS Build
     environment:
       xcode: latest
+      node: 18
+      cocoapods: default
       vars:
         BUNDLE_ID: "com.terencestories.mystoryfootball"
         APPLE_TEAM_ID: "7853SZN5R"
@@ -13,14 +15,17 @@ workflows:
         script: |
           cd MyStoryFootball
           npm install
-      - name: Install CocoaPods
+      - name: Capacitor sync
         script: |
           cd MyStoryFootball
           npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd MyStoryFootball/ios
           pod install --repo-update
       - name: Build ipa
         script: |
-          cd MyStoryFootball
+          cd MyStoryFootball/ios
           xcodebuild \
             -workspace "App.xcworkspace" \
             -scheme "App" \
@@ -33,6 +38,6 @@ workflows:
           xcodebuild -exportArchive \
             -archivePath $CM_BUILD_DIR/build/App.xcarchive \
             -exportPath $CM_BUILD_DIR/build \
-            -exportOptionsPlist exportOptions.plist
+            -exportOptionsPlist ../exportOptions.plist
     artifacts:
       - build/*.ipa
