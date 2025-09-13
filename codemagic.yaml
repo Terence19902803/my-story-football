@@ -2,32 +2,23 @@ workflows:
   ios-workflow:
     name: iOS Build
     environment:
+      node: latest
       xcode: latest
-      vars:
-        XCODE_WORKSPACE: "App/App.xcworkspace"
-        XCODE_SCHEME: "App"
     scripts:
       - name: Install npm dependencies
         script: |
+          cd App
           npm install
       - name: Capacitor sync
         script: |
+          cd App
           npx cap sync ios
       - name: Install CocoaPods
         script: |
-          cd App
+          cd App/ios/App
           pod install
       - name: Build iOS
         script: |
-          xcodebuild \
-            -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
-            -sdk iphoneos \
-            -configuration Release \
-            archive -archivePath $CM_BUILD_DIR/ios_build/App.xcarchive \
-            CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM=7B535ZNRSR \
-            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore"
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos
     artifacts:
-      - ios_build/**/*.xcarchive
-      - $CM_BUILD_DIR/ios_build/**/*.ipa
+      - App/ios/App/build/**/*.ipa
