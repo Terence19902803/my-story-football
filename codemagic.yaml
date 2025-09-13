@@ -15,10 +15,11 @@ workflows:
           npx cap sync ios
       - name: Install CocoaPods
         script: |
-          cd App/ios/App
+          cd App
           pod install
       - name: Build iOS
         script: |
+          cd App
           xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos
     artifacts:
-      - App/ios/App/build/**/*.ipa
+      - App/build/**/*.ipa
