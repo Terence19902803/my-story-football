@@ -9,9 +9,14 @@ workflows:
         CODE_SIGN_IDENTITY: "Apple Distribution"
         PROVISIONING_PROFILE_SPECIFIER: "MyStoryFootball_Provision"
     scripts:
-      - name: Install dependencies
+      - name: Install npm dependencies
         script: |
           cd MyStoryFootball
+          npm install
+      - name: Install CocoaPods
+        script: |
+          cd MyStoryFootball
+          npx cap sync ios
           pod install --repo-update
       - name: Build ipa
         script: |
