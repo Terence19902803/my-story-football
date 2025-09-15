@@ -1,7 +1,7 @@
 workflows:
   ios-sign-only:
-    name: Sign + IPA Only
-    max_build_duration: 20
+    name: DEBUG + Sign iOS App
+    max_build_duration: 30
     instance_type: mac_mini_m1
     environment:
       ios_signing:
@@ -22,7 +22,7 @@ workflows:
               <key>method</key>
               <string>app-store</string>
               <key>teamID</key>
-              <string>\$CM_CERTIFICATE_TEAM_ID</string>
+              <string>7B535ZN5R</string>
               <key>uploadBitcode</key>
               <false/>
               <key>uploadSymbols</key>
@@ -32,21 +32,42 @@ workflows:
           </dict>
           </plist>
           EOF
-      - name: Sign and create IPA
+          echo "=== exportOptions.plist créé ==="
+          cat exportOptions.plist
+      - name: DEBUG et signature
         script: |
           cd ios/App
+          echo "=== EMPLACEMENT ET FICHIERS ==="
+          pwd
+          ls -la
+          echo ""
+          echo "=== VÉRIFICATION WORKSPACE ==="
+          ls -la App.xcworkspace
+          ls -la App.xcworkspace/contents.xcworkspacedata
+          echo ""
+          echo "=== VÉRIFICATION VARIABLES CODEMAGIC ==="
+          echo "TEAM_ID (configuré): '7B535ZN5R'"
+          echo "PROFILE_SPECIFIER (configuré): 'MyStoryFoot_appstore'"
+          echo ""
+          echo "=== DÉMARRAGE BUILD AVEC VALEURS FIXES ==="
           xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath build/App.xcarchive \
-            DEVELOPMENT_TEAM="$CM_CERTIFICATE_TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$CM_PROVISIONING_PROFILE"
+            DEVELOPMENT_TEAM="7B535ZN5R" \
+            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore"
+          echo ""
+          echo "=== EXPORT IPA ==="
           xcodebuild -exportArchive \
             -archivePath build/App.xcarchive \
             -exportPath build/ipa \
             -exportOptionsPlist exportOptions.plist
-          ls -la build/ipa/
+          echo ""
+          echo "=== RÉSULTAT FINAL ==="
+          ls -la build/
+          ls -la build/ipa/ || echo "Dossier ipa introuvable"
     artifacts:
       - ios/App/build/**/*.ipa
+      - ios/App/build/*.ipa
