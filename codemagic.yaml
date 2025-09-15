@@ -1,7 +1,7 @@
 workflows:
   ios-sign-only:
-    name: DEBUG + Sign iOS App
-    max_build_duration: 30
+    name: My Story Football - iOS Final
+    max_build_duration: 25
     instance_type: mac_mini_m1
     environment:
       ios_signing:
@@ -9,16 +9,16 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Create exportOptions.plist
+      - name: Signature et export IPA
         script: |
           cd ios/App
-          cat > exportOptions.plist << EOF
+          
+          # Créer exportOptions.plist
+          cat > exportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-              <key>destination</key>
-              <string>export</string>
               <key>method</key>
               <string>app-store</string>
               <key>teamID</key>
@@ -29,27 +29,24 @@ workflows:
               <true/>
               <key>compileBitcode</key>
               <false/>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.terencedesrues.mystoryfootball</key>
+                  <string>MyStoryFoot_appstore</string>
+              </dict>
           </dict>
           </plist>
           EOF
-          echo "=== exportOptions.plist créé ==="
-          cat exportOptions.plist
-      - name: DEBUG et signature
-        script: |
-          cd ios/App
-          echo "=== EMPLACEMENT ET FICHIERS ==="
-          pwd
-          ls -la
-          echo ""
-          echo "=== VÉRIFICATION WORKSPACE ==="
-          ls -la App.xcworkspace
+          
+          # Vérifier que tout est là
+          echo "=== VÉRIFICATIONS ==="
           ls -la App.xcworkspace/contents.xcworkspacedata
-          echo ""
-          echo "=== VÉRIFICATION VARIABLES CODEMAGIC ==="
-          echo "TEAM_ID (configuré): '7B535ZN5R'"
-          echo "PROFILE_SPECIFIER (configuré): 'MyStoryFoot_appstore'"
-          echo ""
-          echo "=== DÉMARRAGE BUILD AVEC VALEURS FIXES ==="
+          echo "Workspace OK ✅"
+          
+          # Build et signature
+          echo "=== BUILD iOS ==="
           xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
@@ -57,17 +54,19 @@ workflows:
             -destination "generic/platform=iOS" \
             -archivePath build/App.xcarchive \
             DEVELOPMENT_TEAM="7B535ZN5R" \
-            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore"
-          echo ""
+            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
+          
+          # Export IPA
           echo "=== EXPORT IPA ==="
           xcodebuild -exportArchive \
             -archivePath build/App.xcarchive \
             -exportPath build/ipa \
             -exportOptionsPlist exportOptions.plist
-          echo ""
-          echo "=== RÉSULTAT FINAL ==="
-          ls -la build/
-          ls -la build/ipa/ || echo "Dossier ipa introuvable"
+          
+          # Résultat
+          echo "=== RÉSULTAT ==="
+          ls -la build/ipa/
+          find build/ipa/ -name "*.ipa" -exec ls -lh {} \;
     artifacts:
-      - ios/App/build/**/*.ipa
-      - ios/App/build/*.ipa
+      - ios/App/build/ipa/*.ipa
