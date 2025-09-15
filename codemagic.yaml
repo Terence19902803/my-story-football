@@ -9,7 +9,7 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Build iOS avec team specifiee
+      - name: Build iOS automatique pur
         script: |
           cd ios/App
           
@@ -41,7 +41,7 @@ workflows:
           </plist>
           EOF
           
-          echo "=== BUILD AVEC TEAM OBLIGATOIRE ==="
+          echo "=== BUILD AUTOMATIQUE PUR ==="
           xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
