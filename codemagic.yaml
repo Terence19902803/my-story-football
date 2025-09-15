@@ -21,6 +21,28 @@ workflows:
           ls -la App.xcworkspace/contents.xcworkspacedata
           echo "Workspace OK ✅"
           
+          echo "=== CREATION EXPORT OPTIONS ==="
+          cat > exportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>teamID</key>
+              <string>7B535ZN5R</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+          
           echo "=== BUILD AUTOMATIQUE TOTAL ==="
           xcodebuild \
             -workspace App.xcworkspace \
@@ -42,27 +64,7 @@ workflows:
             -exportArchive \
             -archivePath "build/App.xcarchive" \
             -exportPath "build/ipa" \
-            -exportOptionsPlist <(cat << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>method</key>
-    <string>app-store</string>
-    <key>teamID</key>
-    <string>7B535ZN5R</string>
-    <key>signingStyle</key>
-    <string>automatic</string>
-    <key>uploadBitcode</key>
-    <false/>
-    <key>uploadSymbols</key>
-    <true/>
-    <key>compileBitcode</key>
-    <false/>
-</dict>
-</plist>
-EOF
-) \
+            -exportOptionsPlist exportOptions.plist \
             -allowProvisioningUpdates
           
           echo "=== RESULTAT ==="
