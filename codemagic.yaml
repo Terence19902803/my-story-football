@@ -9,7 +9,7 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Build iOS avec signature automatique pure
+      - name: Build iOS avec team specifiee
         script: |
           cd ios/App
           
@@ -21,7 +21,7 @@ workflows:
           ls -la App.xcworkspace/contents.xcworkspacedata
           echo "Workspace OK ✅"
           
-          echo "=== CREATION EXPORT OPTIONS AUTOMATIQUE ==="
+          echo "=== CREATION EXPORT OPTIONS ==="
           cat > exportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -41,7 +41,7 @@ workflows:
           </plist>
           EOF
           
-          echo "=== BUILD AUTOMATIQUE COMPLET ==="
+          echo "=== BUILD AVEC TEAM OBLIGATOIRE ==="
           xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
@@ -51,6 +51,7 @@ workflows:
             -archivePath "build/App.xcarchive" \
             archive \
             CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM=7B535ZN5R \
             -allowProvisioningUpdates \
             -allowProvisioningDeviceRegistration
           
