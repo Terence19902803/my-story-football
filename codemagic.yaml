@@ -1,6 +1,6 @@
 workflows:
   ios-sign-only:
-    name: My Story Football - iOS Final
+    name: My Story Football - iOS FINAL
     max_build_duration: 25
     instance_type: mac_mini_m1
     environment:
@@ -9,11 +9,11 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Signature et export IPA
+      - name: Build et signature automatique
         script: |
           cd ios/App
           
-          # Créer exportOptions.plist
+          # Créer exportOptions.plist simplifié
           cat > exportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -21,51 +21,37 @@ workflows:
           <dict>
               <key>method</key>
               <string>app-store</string>
-              <key>teamID</key>
-              <string>7B535ZN5R</string>
               <key>uploadBitcode</key>
               <false/>
               <key>uploadSymbols</key>
               <true/>
               <key>compileBitcode</key>
               <false/>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>com.terencedesrues.mystoryfootball</key>
-                  <string>MyStoryFoot_appstore</string>
-              </dict>
           </dict>
           </plist>
           EOF
           
-          # Vérifier que tout est là
-          echo "=== VÉRIFICATIONS ==="
+          echo "=== WORKSPACE VÉRIFIÉ ==="
           ls -la App.xcworkspace/contents.xcworkspacedata
           echo "Workspace OK ✅"
           
-          # Build et signature
-          echo "=== BUILD iOS ==="
+          echo "=== BUILD AVEC SIGNATURE AUTOMATIQUE CODEMAGIC ==="
           xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath build/App.xcarchive \
-            DEVELOPMENT_TEAM="7B535ZN5R" \
-            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
-            CODE_SIGN_IDENTITY="Apple Distribution"
+            -allowProvisioningUpdates
           
-          # Export IPA
-          echo "=== EXPORT IPA ==="
+          echo "=== EXPORT IPA AUTOMATIQUE ==="
           xcodebuild -exportArchive \
             -archivePath build/App.xcarchive \
             -exportPath build/ipa \
-            -exportOptionsPlist exportOptions.plist
+            -exportOptionsPlist exportOptions.plist \
+            -allowProvisioningUpdates
           
-          # Résultat
-          echo "=== RÉSULTAT ==="
+          echo "=== RÉSULTAT FINAL ==="
           ls -la build/ipa/
           find build/ipa/ -name "*.ipa" -exec ls -lh {} \;
     artifacts:
