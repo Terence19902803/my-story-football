@@ -9,7 +9,7 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Build iOS avec gestion automatique complete
+      - name: Build iOS avec signature automatique pure
         script: |
           cd ios/App
           
@@ -21,7 +21,7 @@ workflows:
           ls -la App.xcworkspace/contents.xcworkspacedata
           echo "Workspace OK ✅"
           
-          echo "=== CREATION EXPORT OPTIONS ==="
+          echo "=== CREATION EXPORT OPTIONS AUTOMATIQUE ==="
           cat > exportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -29,8 +29,6 @@ workflows:
           <dict>
               <key>method</key>
               <string>app-store</string>
-              <key>teamID</key>
-              <string>7B535ZN5R</string>
               <key>signingStyle</key>
               <string>automatic</string>
               <key>uploadBitcode</key>
@@ -43,7 +41,7 @@ workflows:
           </plist>
           EOF
           
-          echo "=== BUILD AUTOMATIQUE TOTAL ==="
+          echo "=== BUILD AUTOMATIQUE COMPLET ==="
           xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
@@ -53,13 +51,10 @@ workflows:
             -archivePath "build/App.xcarchive" \
             archive \
             CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM=7B535ZN5R \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
             -allowProvisioningUpdates \
             -allowProvisioningDeviceRegistration
           
-          echo "=== EXPORT SIMPLE ==="
+          echo "=== EXPORT AUTOMATIQUE ==="
           xcodebuild \
             -exportArchive \
             -archivePath "build/App.xcarchive" \
