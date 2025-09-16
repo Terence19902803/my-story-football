@@ -1,7 +1,7 @@
 workflows:
-  ios-clean-auto:
-    name: My Story Football - Clean Auto
-    max_build_duration: 25
+  ios-app-store:
+    name: Build iOS App Store
+    max_build_duration: 30
     instance_type: mac_mini_m1
     environment:
       ios_signing:
@@ -9,36 +9,85 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Build iOS automatique propre
+      - name: Install dependencies
+        script: |
+          npm install
+          
+      - name: Build web app
+        script: |
+          npm run build
+          
+      - name: Copy web build to iOS
+        script: |
+          npx cap copy ios
+          
+      - name: Update iOS project
+        script: |
+          npx cap update ios
+          
+      - name: Create exportOptions.plist
         script: |
           cd ios/App
+          cat > exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>destination</key>
+              <string>export</string>
+              <key>method</key>
+              <string>app-store</string>
+              <key>teamID</key>
+              <string>7B535ZN5R</string>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+              <key>signingStyle</key>
+              <string>automatic</string>
+          </dict>
+          </plist>
+          EOF
           
-          echo "=== NETTOYAGE ==="
-          rm -rf build/ DerivedData/
-          
-          echo "=== WORKSPACE VERIFIE ==="
-          ls -la App.xcworkspace/contents.xcworkspacedata
-          echo "Workspace OK ✅"
-          
-          echo "=== BUILD AUTOMATIQUE SANS CONFLITS ==="
-          xcodebuild \
+      - name: Build and Archive iOS
+        script: |
+          cd ios/App
+          echo "=== Vérification fichiers ==="
+          ls -la
+          echo ""
+          echo "=== Vérification workspace ==="
+          ls -la App.xcworkspace/
+          echo ""
+          echo "=== Nettoyage build ==="
+          rm -rf build/
+          mkdir -p build/
+          echo ""
+          echo "=== Archive iOS ==="
+          xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
-            -sdk iphoneos \
             -configuration Release \
             -destination "generic/platform=iOS" \
-            -archivePath "build/App.xcarchive" \
-            archive \
+            -archivePath build/App.xcarchive \
+            DEVELOPMENT_TEAM="7B535ZN5R" \
+            CODE_SIGN_STYLE="Automatic" \
             -allowProvisioningUpdates
+          echo ""
+          echo "=== Vérification archive ==="
+          ls -la build/
+          echo ""
+          echo "=== Export IPA ==="
+          xcodebuild -exportArchive \
+            -archivePath build/App.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist exportOptions.plist \
+            -allowProvisioningUpdates
+          echo ""
+          echo "=== Résultat final ==="
+          ls -la build/ipa/
           
-          echo "=== EXPORT APP STORE ==="
-          xcodebuild \
-            -exportArchive \
-            -archivePath "build/App.xcarchive" \
-            -exportPath "build/ipa" \
-            -exportForAppStore
-          
-          echo "=== RESULTAT ==="
-          find build/ipa/ -name "*.ipa" -exec ls -lh {} \;
     artifacts:
       - ios/App/build/ipa/*.ipa
+      - ios/App/build/App.xcarchive
