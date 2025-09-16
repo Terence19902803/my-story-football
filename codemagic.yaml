@@ -8,7 +8,20 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
+      node: 18
     scripts:
+      - name: Install dependencies
+        script: |
+          echo "=== Install Node dependencies ==="
+          npm install
+          
+      - name: Build web app and sync to iOS
+        script: |
+          echo "=== Build web app ==="
+          npm run build
+          echo "=== Sync to iOS ==="
+          npx cap sync ios
+          
       - name: Create shared scheme
         script: |
           cd ios/App/App.xcodeproj
@@ -95,6 +108,9 @@ workflows:
       - name: Setup Pods
         script: |
           cd ios/App
+          echo "=== Vérification Podfile ==="
+          head -10 Podfile
+          echo "=== Install Pods ==="
           pod install --repo-update
           
       - name: Build iOS App
@@ -124,7 +140,7 @@ workflows:
           # Vérifier le scheme
           xcodebuild -list -workspace App.xcworkspace
           
-          # Build Archive (SANS MODIFIER LE PROJECT)
+          # Build Archive
           xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
