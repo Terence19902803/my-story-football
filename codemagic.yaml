@@ -9,47 +9,104 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Fix project.pbxproj with surgical edits
+      - name: Create shared scheme
         script: |
           cd ios/App/App.xcodeproj
-          echo "=== Backup original file ==="
-          cp project.pbxproj project.pbxproj.backup
+          mkdir -p xcshareddata/xcschemes
+          cat > xcshareddata/xcschemes/App.xcscheme << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <Scheme
+             LastUpgradeVersion = "1500"
+             version = "1.3">
+             <BuildAction
+                parallelizeBuildables = "YES"
+                buildImplicitDependencies = "YES">
+                <BuildActionEntries>
+                   <BuildActionEntry
+                      buildForTesting = "YES"
+                      buildForRunning = "YES"
+                      buildForProfiling = "YES"
+                      buildForArchiving = "YES"
+                      buildForAnalyzing = "YES">
+                      <BuildableReference
+                         BuildableIdentifier = "primary"
+                         BlueprintIdentifier = "504EC3031FED79650016851F"
+                         BuildableName = "App.app"
+                         BlueprintName = "App"
+                         ReferencedContainer = "container:App.xcodeproj">
+                      </BuildableReference>
+                   </BuildActionEntry>
+                </BuildActionEntries>
+             </BuildAction>
+             <TestAction
+                buildConfiguration = "Debug"
+                selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+                selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+                shouldUseLaunchSchemeArgsEnv = "YES">
+             </TestAction>
+             <LaunchAction
+                buildConfiguration = "Debug"
+                selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+                selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+                launchStyle = "0"
+                useCustomWorkingDirectory = "NO"
+                ignoresPersistentStateOnLaunch = "NO"
+                debugDocumentVersioning = "YES"
+                debugServiceExtension = "internal"
+                allowLocationSimulation = "YES">
+                <BuildableProductRunnable
+                   runnableDebuggingMode = "0">
+                   <BuildableReference
+                      BuildableIdentifier = "primary"
+                      BlueprintIdentifier = "504EC3031FED79650016851F"
+                      BuildableName = "App.app"
+                      BlueprintName = "App"
+                      ReferencedContainer = "container:App.xcodeproj">
+                   </BuildableReference>
+                </BuildableProductRunnable>
+             </LaunchAction>
+             <ProfileAction
+                buildConfiguration = "Release"
+                shouldUseLaunchSchemeArgsEnv = "YES"
+                savedToolIdentifier = ""
+                useCustomWorkingDirectory = "NO"
+                debugDocumentVersioning = "YES">
+                <BuildableProductRunnable
+                   runnableDebuggingMode = "0">
+                   <BuildableReference
+                      BuildableIdentifier = "primary"
+                      BlueprintIdentifier = "504EC3031FED79650016851F"
+                      BuildableName = "App.app"
+                      BlueprintName = "App"
+                      ReferencedContainer = "container:App.xcodeproj">
+                   </BuildableReference>
+                </BuildableProductRunnable>
+             </ProfileAction>
+             <AnalyzeAction
+                buildConfiguration = "Debug">
+             </AnalyzeAction>
+             <ArchiveAction
+                buildConfiguration = "Release"
+                revealArchiveInOrganizer = "YES">
+             </ArchiveAction>
+          </Scheme>
+          EOF
           
-          echo "=== Remove problematic CODE_SIGN_IDENTITY lines ==="
-          sed -i '' '/CODE_SIGN_IDENTITY = "iPhone Developer";/d' project.pbxproj
-          
-          echo "=== Add DEVELOPMENT_TEAM in TargetAttributes ==="
-          sed -i '' '/ProvisioningStyle = Automatic;/a\
-						DevelopmentTeam = 7B535ZN5R;' project.pbxproj
-          
-          echo "=== Add DEVELOPMENT_TEAM in Debug config ==="
-          sed -i '' '/ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;/a\
-				DEVELOPMENT_TEAM = 7B535ZN5R;' project.pbxproj
-          
-          echo "=== Verify syntax ==="
-          plutil -lint project.pbxproj
-          if [ $? -ne 0 ]; then
-            echo "=== Syntax error detected, restoring backup ==="
-            cp project.pbxproj.backup project.pbxproj
-            echo "=== Manual fix attempt ==="
-            # Remove the problematic lines more carefully
-            grep -v 'CODE_SIGN_IDENTITY = "iPhone Developer"' project.pbxproj.backup > project.pbxproj.temp
-            mv project.pbxproj.temp project.pbxproj
-          fi
-          
-          echo "=== Final verification ==="
-          head -20 project.pbxproj
-          
-      - name: Create exportOptions.plist
+      - name: Setup Pods
         script: |
           cd ios/App
+          pod install --repo-update
+          
+      - name: Build iOS App
+        script: |
+          cd ios/App
+          
+          # Créer exportOptions.plist
           cat > exportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-              <key>destination</key>
-              <string>export</string>
               <key>method</key>
               <string>app-store</string>
               <key>teamID</key>
@@ -64,14 +121,10 @@ workflows:
           </plist>
           EOF
           
-      - name: Build and Archive iOS
-        script: |
-          cd ios/App
-          echo "=== Nettoyage build ==="
-          rm -rf build/
-          mkdir -p build/
-          echo ""
-          echo "=== Archive iOS ==="
+          # Vérifier le scheme
+          xcodebuild -list -workspace App.xcworkspace
+          
+          # Build Archive (SANS MODIFIER LE PROJECT)
           xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
@@ -79,17 +132,17 @@ workflows:
             -destination "generic/platform=iOS" \
             -archivePath build/App.xcarchive \
             DEVELOPMENT_TEAM="7B535ZN5R" \
+            PROVISIONING_PROFILE_SPECIFIER="MyStoryFoot_appstore" \
             CODE_SIGN_STYLE="Automatic" \
             -allowProvisioningUpdates
-          echo ""
-          echo "=== Export IPA ==="
+          
+          # Export IPA
           xcodebuild -exportArchive \
             -archivePath build/App.xcarchive \
             -exportPath build/ipa \
             -exportOptionsPlist exportOptions.plist \
             -allowProvisioningUpdates
-          echo ""
-          echo "=== Résultat final ==="
+          
           ls -la build/ipa/
           
     artifacts:
