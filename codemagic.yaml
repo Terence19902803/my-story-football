@@ -1,6 +1,6 @@
 workflows:
-  ios-manual-signing:
-    name: My Story Football - Manuel
+  ios-clean-auto:
+    name: My Story Football - Clean Auto
     max_build_duration: 25
     instance_type: mac_mini_m1
     environment:
@@ -9,19 +9,18 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Build iOS signature manuelle
+      - name: Build iOS automatique propre
         script: |
           cd ios/App
           
           echo "=== NETTOYAGE ==="
-          rm -rf build/
-          rm -rf DerivedData/
+          rm -rf build/ DerivedData/
           
           echo "=== WORKSPACE VERIFIE ==="
           ls -la App.xcworkspace/contents.xcworkspacedata
           echo "Workspace OK ✅"
           
-          echo "=== BUILD SIGNATURE MANUELLE ==="
+          echo "=== BUILD AUTOMATIQUE SANS CONFLITS ==="
           xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
@@ -29,9 +28,10 @@ workflows:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath "build/App.xcarchive" \
-            archive
+            archive \
+            -allowProvisioningUpdates
           
-          echo "=== EXPORT MANUEL ==="
+          echo "=== EXPORT APP STORE ==="
           xcodebuild \
             -exportArchive \
             -archivePath "build/App.xcarchive" \
