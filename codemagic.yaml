@@ -9,22 +9,6 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
-      - name: Install dependencies
-        script: |
-          npm install
-          
-      - name: Build web app
-        script: |
-          npm run build
-          
-      - name: Copy web build to iOS
-        script: |
-          npx cap copy ios
-          
-      - name: Update iOS project
-        script: |
-          npx cap update ios
-          
       - name: Create exportOptions.plist
         script: |
           cd ios/App
@@ -45,8 +29,6 @@ workflows:
               <true/>
               <key>compileBitcode</key>
               <false/>
-              <key>signingStyle</key>
-              <string>automatic</string>
           </dict>
           </plist>
           EOF
@@ -54,12 +36,6 @@ workflows:
       - name: Build and Archive iOS
         script: |
           cd ios/App
-          echo "=== Vérification fichiers ==="
-          ls -la
-          echo ""
-          echo "=== Vérification workspace ==="
-          ls -la App.xcworkspace/
-          echo ""
           echo "=== Nettoyage build ==="
           rm -rf build/
           mkdir -p build/
@@ -75,9 +51,6 @@ workflows:
             CODE_SIGN_STYLE="Automatic" \
             -allowProvisioningUpdates
           echo ""
-          echo "=== Vérification archive ==="
-          ls -la build/
-          echo ""
           echo "=== Export IPA ==="
           xcodebuild -exportArchive \
             -archivePath build/App.xcarchive \
@@ -90,4 +63,3 @@ workflows:
           
     artifacts:
       - ios/App/build/ipa/*.ipa
-      - ios/App/build/App.xcarchive
