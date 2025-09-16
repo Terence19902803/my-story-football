@@ -10,10 +10,30 @@ workflows:
       xcode: 15.0
       node: 18
     scripts:
+      - name: Debug working directory
+        script: |
+          echo "=== DEBUGGING WORKSPACE ==="
+          pwd
+          echo "=== Liste des fichiers racine ==="
+          ls -la
+          echo "=== Recherche package.json ==="
+          find . -name "package.json" -type f
+          echo "=== Contenu package.json si trouvé ==="
+          if [ -f package.json ]; then
+            head -10 package.json
+          else
+            echo "❌ package.json non trouvé dans $(pwd)"
+          fi
+          
       - name: Install dependencies
         script: |
           echo "=== Install Node dependencies ==="
-          npm install
+          if [ -f package.json ]; then
+            npm install
+          else
+            echo "❌ Impossible - package.json manquant"
+            exit 1
+          fi
           
       - name: Build web app and sync to iOS
         script: |
@@ -108,8 +128,6 @@ workflows:
       - name: Setup Pods
         script: |
           cd ios/App
-          echo "=== Vérification Podfile ==="
-          head -10 Podfile
           echo "=== Install Pods ==="
           pod install --repo-update
           
