@@ -9,6 +9,19 @@ workflows:
         bundle_identifier: com.terencedesrues.mystoryfootball
       xcode: 15.0
     scripts:
+      - name: Fix project.pbxproj
+        script: |
+          cd ios/App/App.xcodeproj
+          echo "=== Correction project.pbxproj ==="
+          # Suppression propre des lignes CODE_SIGN_IDENTITY
+          sed -i.backup 's/CODE_SIGN_IDENTITY = "iPhone Developer";//g' project.pbxproj
+          # Ajout DEVELOPMENT_TEAM dans les bonnes sections
+          sed -i.backup '/DEVELOPMENT_TEAM/d' project.pbxproj
+          sed -i.backup '/ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;/a\
+				DEVELOPMENT_TEAM = 7B535ZN5R;' project.pbxproj
+          echo "=== Vérification syntax ==="
+          plutil -lint project.pbxproj || echo "Erreur syntaxe détectée"
+          
       - name: Create exportOptions.plist
         script: |
           cd ios/App
